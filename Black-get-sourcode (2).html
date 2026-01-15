@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spin Kelompok Siswa</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 18px; background:#0b0f14; color:#e8eef7; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    p { margin: 6px 0 12px; color:#b9c4d6; }
+    .card { background:#121a24; border:1px solid #223043; border-radius: 14px; padding: 14px; margin: 12px 0; }
+    .row { display:flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    label { display:flex; gap: 8px; align-items: center; color:#d7e3f6; }
+    input[type="number"] { width: 110px; padding: 10px 10px; border-radius: 10px; border:1px solid #2a3b54; background:#0b0f14; color:#e8eef7; }
+    button {
+      padding: 10px 14px; border-radius: 12px; border:1px solid #2a3b54;
+      background:#1a2636; color:#e8eef7; cursor:pointer;
+    }
+    button:hover { filter: brightness(1.07); }
+    .mini { font-size: 12px; color:#9fb0c9; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .group h3 { margin: 0 0 8px; font-size: 16px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius: 999px; font-size: 12px; border:1px solid #2a3b54; color:#b9c4d6; margin-left: 8px;}
+    ul { margin: 0; padding-left: 18px; }
+    li { margin: 4px 0; }
+    .tag { font-size: 11px; padding:2px 6px; border-radius: 999px; border:1px solid #2a3b54; margin-left: 8px; color:#b9c4d6; }
+    .ok { color:#8ff0b0; }
+    .warn { color:#ffcf7a; }
+    .bad { color:#ff8aa1; }
+    .spinbox { display:flex; align-items:center; gap: 10px; }
+    .wheel {
+      width: 170px; height: 170px; border-radius: 50%;
+      border: 2px solid #2a3b54;
+      background: conic-gradient(from 0deg, #1f2d41, #121a24, #1f2d41);
+      position: relative;
+      box-shadow: 0 0 0 6px rgba(42,59,84,0.25) inset;
+    }
+    .needle {
+      position:absolute; top:-6px; left:50%; transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 18px solid #ffcf7a;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+    }
+    .spintext { font-weight: 600; }
+    .muted { opacity: 0.92; }
+    .footer { margin-top: 10px; font-size: 12px; color:#9fb0c9; }
+    details { margin-top: 8px; }
+    textarea { width:100%; min-height: 90px; border-radius: 12px; border:1px solid #2a3b54; background:#0b0f14; color:#e8eef7; padding: 10px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Spin Pembagian Kelompok (Rata + Pintar Merata + Wajib Cowo/Cewe)</h1>
+  <p>Tekan <b>SPIN & BAGI</b> untuk bikin kelompok otomatis. Aturan: tiap kelompok minimal 1 cowo + 1 cewe, pintar disebar merata.</p>
+
+  <div class="card">
+    <div class="row">
+      <label>Jumlah Kelompok:
+        <input id="numGroups" type="number" min="2" value="6" />
+      </label>
+      <button id="spinBtn">SPIN & BAGI</button>
+      <button id="copyBtn">Copy Hasil</button>
+      <span id="status" class="mini"></span>
+    </div>
+
+    <div style="margin-top:12px" class="spinbox">
+      <div class="wheel" id="wheel"><div class="needle"></div></div>
+      <div>
+        <div class="spintext" id="spinText">Siap spin…</div>
+        <div class="mini muted" id="spinSub">Algoritma: sebar pintar dulu → isi sisa → cek syarat cowo/cewe.</div>
+      </div>
+    </div>
+
+    <details>
+      <summary class="mini">Opsional: Edit daftar / index pintar (kalau ada yang mau diubah)</summary>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1; min-width:280px">
+          <div class="mini">Daftar Cowo (1 baris = 1 nama)</div>
+          <textarea id="boysBox"></textarea>
+          <div class="mini">Index pintar cowo (pisah koma)</div>
+          <input id="smartBoysBox" type="text" style="width:100%" />
+        </div>
+        <div style="flex:1; min-width:280px">
+          <div class="mini">Daftar Cewe (1 baris = 1 nama)</div>
+          <textarea id="girlsBox"></textarea>
+          <div class="mini">Index pintar cewe (pisah koma)</div>
+          <input id="smartGirlsBox" type="text" style="width:100%" />
+        </div>
+      </div>
+      <div class="footer">Kalau kamu edit di sini, tombol SPIN akan pakai versi yang baru.</div>
+    </details>
+  </div>
+
+  <div id="out" class="grid"></div>
+
+  <div class="card">
+    <div class="mini">
+      <span class="ok">●</span> memenuhi syarat &nbsp;&nbsp;
+      <span class="warn">●</span> hampir (misal pintar agak numpuk) &nbsp;&nbsp;
+      <span class="bad">●</span> gagal (misal kelompok kebanyakan sehingga ada yang tidak dapat cowo/cewe)
+    </div>
+  </div>
+</div>
+
+<script>
+/** ====== DATA DEFAULT (sesuai chat kita) ====== */
+const DEFAULT_BOYS = [
+  "Anggit Cahyo Nugroho",
+  "Dewantara Putra Pangestu",
+  "Dhamar Rickhy Raykhan",
+  "Evans Alfarel",
+  "Fachri Catur Ramadhan",
+  "Farras Kaysan Rachman",
+  "Fattan Parves Buana",
+  "Fiqi Adillah Ismi Putra",
+  "Gema Bintang Ramadhan",
+  "Haikal Joanelman",
+  "Mohamad Arsat",
+  "Muhamad Ilham",
+  "Muhammad Rian Fadhillah",
+  "Nizham Albarizy",
+  "Ramzi Achmad Gustomi"
+];
+
+// Cewe total 21 dari data kita
+const DEFAULT_GIRLS = [
+  "Angela Mary Giovani",
+  "Blezzia Holymora Tampubolon",
+  "Defaira Syawalsa",
+  "Della Sugita",
+  "Gisela Destiara",
+  "Hasnah Fauziah",
+  "Khairunissa",
+  "Lita Adistia",
+  "Maulida Rahmawati",
+  "Nabilla Khumaeroh Handayani",
+  "Novalina Shinta Nauli",
+  "Nurdiah Pitaloka",
+  "Pingki Laura Indriastuti Indriawan",
+  "Puteri Kirana Azzahra",
+  "Rachma Asyifaul Husna",
+  "Raeyhani Ikhsan",
+  "Safina Juwairiyah",
+  "Sang Ayu Putu Nalini",
+  "Shafiya Juwairiyah",
+  "Talitha Azzahra",
+  "Wafa Nurhani Shofia"
+];
+
+// Index pintar sesuai yang kamu kasih:
+// Cowo: 1,3,6,7,13,14,15
+// Cewe: 1,2,3,12,15,17,18,19,20,21,22  (index 22 tidak ada di data cewe=21 → otomatis diabaikan)
+const DEFAULT_SMART_BOYS = [1,3,6,7,13,14,15];
+const DEFAULT_SMART_GIRLS = [1,2,3,11,14,16,17,18,19,20,21];
+
+/** ====== HELPERS ====== */
+const $ = (id) => document.getElementById(id);
+
+function parseLines(text) {
+  return text.split("\n").map(s => s.trim()).filter(Boolean);
+}
+
+function parseIdxList(text) {
+  return text.split(",").map(x => parseInt(x.trim(),10)).filter(n => Number.isFinite(n) && n > 0);
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function rotateWheel() {
+  const wheel = $("wheel");
+  const deg = 720 + Math.floor(Math.random() * 1080);
+  wheel.animate(
+    [{ transform: "rotate(0deg)" }, { transform: `rotate(${deg}deg)` }],
+    { duration: 900, easing: "cubic-bezier(.2,.8,.2,1)" }
+  );
+}
+
+function buildSmartSet(names, smartIdx) {
+  const smart = new Set();
+  for (const idx of smartIdx) {
+    const i = idx - 1;
+    if (i >= 0 && i < names.length) smart.add(names[i]);
+  }
+  return smart;
+}
+
+/**
+ * Algoritma:
+ * 1) Bikin groups kosong
+ * 2) Sebar "pintar" cowo round-robin
+ * 3) Sebar "pintar" cewe round-robin
+ * 4) Pastikan tiap group minimal punya 1 cowo & 1 cewe:
+ *    - isi cowo dulu ke group yang belum ada cowo
+ *    - isi cewe dulu ke group yang belum ada cewe
+ * 5) Isi sisa (campur) secara round-robin sambil rata
+ */
+function makeGroups({boys, girls, smartBoysIdx, smartGirlsIdx, k}) {
+  const smartBoys = buildSmartSet(boys, smartBoysIdx);
+  const smartGirls = buildSmartSet(girls, smartGirlsIdx);
+
+  // Pools
+  let boysSmart = boys.filter(n => smartBoys.has(n));
+  let boysRest  = boys.filter(n => !smartBoys.has(n));
+  let girlsSmart = girls.filter(n => smartGirls.has(n));
+  let girlsRest  = girls.filter(n => !smartGirls.has(n));
+
+  boysSmart = shuffle(boysSmart);
+  boysRest  = shuffle(boysRest);
+  girlsSmart = shuffle(girlsSmart);
+  girlsRest  = shuffle(girlsRest);
+
+  const groups = Array.from({length:k}, (_,i)=>({
+    name: `Kelompok ${i+1}`,
+    members: [],
+    boys: 0,
+    girls: 0,
+    smart: 0
+  }));
+
+  const addMember = (gi, name, gender, isSmart) => {
+    const g = groups[gi];
+    g.members.push({ name, gender, smart: isSmart });
+    if (gender === "M") g.boys++;
+    if (gender === "F") g.girls++;
+    if (isSmart) g.smart++;
+  };
+
+  // Round robin helper
+  let ptr = 0;
+  const rr = () => (ptr++ % k);
+
+  // 2) sebar pintar cowo
+  for (const n of boysSmart) addMember(rr(), n, "M", true);
+
+  // 3) sebar pintar cewe
+  for (const n of girlsSmart) addMember(rr(), n, "F", true);
+
+  // 4) pastikan tiap kelompok minimal 2 cowo & 2 cewe
+for (let i = 0; i < k; i++) {
+  while (groups[i].boys < 2) {
+    const n = boysRest.pop();
+    if (!n) break;
+    addMember(i, n, "M", false);
+  }
+  while (groups[i].girls < 2) {
+    const n = girlsRest.pop();
+    if (!n) break;
+    addMember(i, n, "F", false);
+  }
+}
+
+  // 5) isi sisa, tetap rata (pilih group dengan anggota paling sedikit dulu)
+  const remaining = [];
+  for (const n of boysRest) remaining.push({name:n, gender:"M", smart:false});
+  for (const n of girlsRest) remaining.push({name:n, gender:"F", smart:false});
+  const rem = shuffle(remaining);
+
+  for (const m of rem) {
+    // pilih group dengan size terkecil
+    let best = 0;
+    for (let i=1; i<k; i++) {
+      if (groups[i].members.length < groups[best].members.length) best = i;
+    }
+    addMember(best, m.name, m.gender, m.smart);
+  }
+
+  // scoring / checks
+  const okGender = groups.every(g => g.boys > 0 && g.girls > 0);
+  const sizes = groups.map(g=>g.members.length);
+  const maxSize = Math.max(...sizes), minSize = Math.min(...sizes);
+  const sizeBalanced = (maxSize - minSize) <= 1;
+
+  return { groups, okGender, sizeBalanced, smartBoys, smartGirls };
+}
+
+/** ====== UI RENDER ====== */
+function render(result) {
+  const out = $("out");
+  out.innerHTML = "";
+
+  const {groups, okGender, sizeBalanced} = result;
+  const sizes = groups.map(g=>g.members.length);
+  const maxSize = Math.max(...sizes), minSize = Math.min(...sizes);
+
+  for (const g of groups) {
+    const card = document.createElement("div");
+    card.className = "card group";
+
+    const title = document.createElement("h3");
+    title.textContent = g.name;
+
+    const meta = document.createElement("span");
+    meta.className = "pill";
+    meta.textContent = `Anggota: ${g.members.length} | Cowo: ${g.boys} | Cewe: ${g.girls} | Pintar: ${g.smart}`;
+    title.appendChild(meta);
+
+    const ul = document.createElement("ul");
+    for (const m of g.members) {
+      const li = document.createElement("li");
+      li.textContent = m.name;
+      const tg = document.createElement("span");
+      tg.className = "tag";
+      tg.textContent = m.gender === "M" ? "Cowo" : "Cewe";
+      li.appendChild(tg);
+      ul.appendChild(li);
+    }
+
+    card.appendChild(title);
+    card.appendChild(ul);
+    out.appendChild(card);
+  }
+
+  let msg = "";
+  const status = $("status");
+  if (!okGender) {
+    msg = "GAGAL: jumlah kelompok kebanyakan → ada kelompok tidak kebagian cowo/cewe.";
+    status.className = "mini bad";
+  } else if (!sizeBalanced) {
+    msg = `OK tapi kurang rata: selisih ukuran ${maxSize-minSize} orang.`;
+    status.className = "mini warn";
+  } else {
+    msg = "OK: rata & setiap kelompok ada cowo+cewe.";
+    status.className = "mini ok";
+  }
+  status.textContent = msg;
+}
+
+function getConfigFromBoxes() {
+  const boys = parseLines($("boysBox").value);
+  const girls = parseLines($("girlsBox").value);
+  const smartBoysIdx = parseIdxList($("smartBoysBox").value);
+  const smartGirlsIdx = parseIdxList($("smartGirlsBox").value);
+  const k = parseInt($("numGroups").value, 10);
+
+  return {boys, girls, smartBoysIdx, smartGirlsIdx, k};
+}
+
+function validateConfig(cfg) {
+  const {boys, girls, k} = cfg;
+  if (!Number.isFinite(k) || k < 2) return "Jumlah kelompok minimal 2.";
+
+  const maxGroupsByBoys = Math.floor(boys.length / 2);
+  const maxGroupsByGirls = Math.floor(girls.length / 2);
+  const maxGroups = Math.min(maxGroupsByBoys, maxGroupsByGirls);
+
+  if (k > maxGroups) {
+    return `Jumlah kelompok (${k}) kebanyakan.
+Aturan minimal 2 cowo + 2 cewe.
+Maksimal kelompok yang bisa dibuat: ${maxGroups}.`;
+  }
+  return null;
+}
+
+/** ====== INIT ====== */
+function init() {
+  $("boysBox").value = DEFAULT_BOYS.join("\n");
+  $("girlsBox").value = DEFAULT_GIRLS.join("\n");
+  $("smartBoysBox").value = DEFAULT_SMART_BOYS.join(",");
+  $("smartGirlsBox").value = DEFAULT_SMART_GIRLS.join(",");
+
+  $("spinBtn").addEventListener("click", () => {
+    const cfg = getConfigFromBoxes();
+    const err = validateConfig(cfg);
+
+    rotateWheel();
+    $("spinText").textContent = "Spinning…";
+
+    setTimeout(() => {
+      if (err) {
+        $("status").textContent = err;
+        $("status").className = "mini bad";
+        $("spinText").textContent = "Error (cek aturan)";
+        $("out").innerHTML = "";
+        return;
+      }
+      const res = makeGroups(cfg);
+      render(res);
+      $("spinText").textContent = "Selesai ✅";
+    }, 950);
+  });
+
+  $("copyBtn").addEventListener("click", async () => {
+    const cards = [...document.querySelectorAll(".group")];
+    if (cards.length === 0) return;
+    let text = "";
+    cards.forEach((c, idx) => {
+      const title = c.querySelector("h3").childNodes[0].textContent.trim();
+      text += `${title}\n`;
+      const items = [...c.querySelectorAll("li")].map(li => li.childNodes[0].textContent.trim());
+      items.forEach((n,i)=> text += `  ${i+1}. ${n}\n`);
+      text += "\n";
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      $("status").textContent = "Hasil sudah di-copy ✅";
+      $("status").className = "mini ok";
+    } catch {
+      $("status").textContent = "Gagal copy (browser tidak izinkan).";
+      $("status").className = "mini warn";
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
