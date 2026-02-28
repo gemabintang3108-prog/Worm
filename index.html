@@ -1,1203 +1,139 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Smart Gate • Multi Role Attendance (Demo)</title>
-
-  <!-- UI -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <!-- QR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
-  <style>
-    :root{
-      --bg:#0b1220;
-      --panel:rgba(17,24,39,.70);
-      --border:rgba(148,163,184,.18);
-      --cyan:#06b6d4;
-    }
-    body{
-      font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto;
-      background: radial-gradient(1200px 700px at 80% -10%, rgba(6,182,212,.18), transparent 60%),
-                  radial-gradient(900px 600px at 0% 0%, rgba(99,102,241,.18), transparent 55%),
-                  var(--bg);
-      color:#e5e7eb;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .glass{
-      background:var(--panel);
-      border:1px solid var(--border);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 12px 40px rgba(0,0,0,.35);
-    }
-    .glow{
-      box-shadow: 0 0 0 1px rgba(6,182,212,.12), 0 0 28px rgba(6,182,212,.18);
-    }
-    .chip{
-      font-size:11px; font-weight:800; letter-spacing:.06em;
-      padding:.35rem .6rem; border-radius:999px;
-      border:1px solid rgba(148,163,184,.18);
-    }
-    #reader{ border:none!important; border-radius:22px; overflow:hidden; background:#000; }
-    .btn{
-      border-radius:16px; font-weight:800;
-      padding:.85rem 1rem; font-size:.85rem;
-      transition:.15s; user-select:none;
-    }
-    .btn:active{ transform:scale(.98); }
-    .navbtn{
-      padding:.75rem 1rem; border-radius:16px; font-weight:800; font-size:.8rem;
-      background:rgba(2,6,23,.35); border:1px solid var(--border);
-    }
-    .navbtn.active{ background:rgba(6,182,212,.18); border-color:rgba(6,182,212,.35); color:#e6fbff; }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .small{ font-size:12px; color:rgba(226,232,240,.75); }
-    .muted{ color:rgba(226,232,240,.62); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Presence SMA 12 | Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+<body class="bg-slate-900 text-white font-sans min-h-screen">
 
-<body class="min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-6">
-
-    <!-- Header -->
-    <header class="flex items-center justify-between gap-3 mb-5">
-      <div>
-        <div class="text-[10px] font-black tracking-[0.35em] uppercase text-cyan-300">SMART GATE • DEMO</div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          Attendance System <span class="text-slate-400">Multi Role</span>
-        </h1>
-        <div class="small mt-1">UI lebih proper ✅ QR generate + camera scan ✅ (masih localStorage untuk tes)</div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <div id="who" class="hidden glass rounded-2xl px-4 py-2 text-xs"></div>
-        <button id="logout" class="hidden btn bg-rose-600 hover:bg-rose-500">Logout</button>
-      </div>
+    <header class="bg-blue-700 p-6 shadow-xl">
+        <div class="container mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold italic">SMART PRESENCE 12</h1>
+                <p class="text-xs opacity-80 text-blue-100 italic">Sistem Absensi Real-time & Bot WhatsApp</p>
+            </div>
+            <div class="text-right">
+                <span class="bg-green-500 text-[10px] px-2 py-1 rounded-full animate-pulse">SYSTEM ONLINE</span>
+            </div>
+        </div>
     </header>
 
-    <!-- LOGIN -->
-    <section id="viewLogin" class="glass glow rounded-[28px] p-6 sm:p-8">
-      <div class="grid lg:grid-cols-2 gap-6">
-        <div>
-          <h2 class="text-xl font-extrabold">Masuk Sistem</h2>
-          <p class="small mt-2">
-            Demo role: <span class="mono">sekretaris / 1234</span>, <span class="mono">piket / 1234</span>,
-            <span class="mono">walas / 1234</span>, <span class="mono">admin / 1234</span>
-          </p>
+    <nav class="container mx-auto mt-6 px-4">
+        <div class="flex bg-slate-800 rounded-lg p-1 gap-2 shadow-lg border border-slate-700">
+            <button onclick="switchRole('sekretaris')" id="btn-sekretaris" class="role-btn flex-1 py-3 rounded-md bg-blue-600 font-bold transition-all"><i class="fas fa-user-edit mr-2"></i>Sekretaris</button>
+            <button onclick="switchRole('piket')" id="btn-piket" class="role-btn flex-1 py-3 rounded-md hover:bg-slate-700 transition-all text-slate-400"><i class="fas fa-door-open mr-2"></i>Guru Piket</button>
+            <button onclick="switchRole('guru')" id="btn-guru" class="role-btn flex-1 py-3 rounded-md hover:bg-slate-700 transition-all text-slate-400"><i class="fas fa-file-excel mr-2"></i>Rekap (Guru)</button>
+        </div>
+    </nav>
 
-          <div class="mt-5 grid gap-3">
-            <div class="glass rounded-2xl p-4">
-              <div class="text-xs font-bold text-slate-300">Kelebihan versi ini</div>
-              <ul class="mt-2 small list-disc pl-5 space-y-1">
-                <li>QR card beneran (bisa print)</li>
-                <li>Scan QR pakai kamera (html5-qrcode)</li>
-                <li>Role-based akses (Sekretaris/Piket/Walas/Admin)</li>
-                <li>Status: Hadir/Terlambat/Izin/Sakit/Alpa + Event Dispen/Pulang</li>
-              </ul>
+    <main class="container mx-auto p-4">
+
+        <section id="role-sekretaris" class="role-section space-y-4">
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                <h2 class="text-xl font-bold mb-4 text-blue-400"><i class="fas fa-users mr-2"></i>Absensi Kelas: XI-A</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-700 text-slate-300">
+                            <tr>
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                            <tr class="hover:bg-slate-750">
+                                <td class="p-3">Bintang Gema</td>
+                                <td class="p-3 flex justify-center gap-2">
+                                    <button onclick="kirimWA('Bintang', 'Hadir')" class="bg-green-600 hover:bg-green-700 p-2 rounded text-xs px-4">Hadir</button>
+                                    <button onclick="kirimWA('Bintang', 'Sakit')" class="bg-yellow-600 hover:bg-yellow-700 p-2 rounded text-xs px-4">Sakit</button>
+                                    <button onclick="kirimWA('Bintang', 'Alpa')" class="bg-red-600 hover:bg-red-700 p-2 rounded text-xs px-4 text-white">Alpa</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-750">
+                                <td class="p-3">Kevin Store</td>
+                                <td class="p-3 flex justify-center gap-2">
+                                    <button class="bg-green-600 p-2 rounded text-xs px-4">Hadir</button>
+                                    <button class="bg-yellow-600 p-2 rounded text-xs px-4">Sakit</button>
+                                    <button class="bg-red-600 p-2 rounded text-xs px-4">Alpa</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </section>
 
-            <div class="glass rounded-2xl p-4">
-              <div class="text-xs font-bold text-slate-300">Catatan</div>
-              <div class="small mt-1">
-                Ini tes konsep. Kalau mau WA beneran, harus backend (jangan taruh token di frontend).
-              </div>
+        <section id="role-piket" class="role-section hidden space-y-4">
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                <h2 class="text-xl font-bold mb-4 text-orange-400"><i class="fas fa-id-card mr-2"></i>Input Izin Keluar Siswa</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" placeholder="Cari Nama Siswa..." class="bg-slate-900 border border-slate-700 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <select class="bg-slate-900 border border-slate-700 p-3 rounded-lg text-slate-300">
+                        <option>Pilih Alasan Izin</option>
+                        <option>Sakit (Pulang Cepat)</option>
+                        <option>Dispensasi Lomba</option>
+                        <option>Urusan Keluarga</option>
+                    </select>
+                </div>
+                <button onclick="alert('Izin diproses! Bot WA sedang mengirim notif ke Ortu...')" class="w-full mt-4 bg-orange-600 hover:bg-orange-700 p-3 rounded-lg font-bold transition">Proses Izin & Kirim Notif WA</button>
             </div>
-          </div>
-        </div>
+        </section>
 
-        <div class="glass rounded-[28px] p-6">
-          <label class="text-xs font-bold text-slate-300">Username</label>
-          <input id="u" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                 placeholder="sekretaris / piket / walas / admin"/>
-
-          <label class="text-xs font-bold text-slate-300 mt-4 block">Password</label>
-          <input id="p" type="password" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                 placeholder="1234"/>
-
-          <button id="login" class="mt-4 w-full btn bg-cyan-600 hover:bg-cyan-500">Masuk</button>
-
-          <div class="mt-4 small muted">
-            Belum ada data? Login admin → klik “Seed Siswa Demo”.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- APP -->
-    <section id="viewApp" class="hidden">
-      <!-- NAV -->
-      <div class="glass rounded-2xl p-2 flex flex-wrap gap-2 mb-5">
-        <button class="navbtn active" data-tab="dash">🏠 Dashboard</button>
-        <button class="navbtn" data-tab="students">🎫 Kartu QR</button>
-        <button class="navbtn" data-tab="scan">📷 Scan</button>
-        <button class="navbtn" data-tab="izin">📝 Izin/Sakit</button>
-        <button class="navbtn" data-tab="piket">🚪 Piket</button>
-        <button class="navbtn" data-tab="rekap">📊 Rekap</button>
-        <button class="navbtn" data-tab="admin">⚙️ Admin</button>
-      </div>
-
-      <!-- DASH -->
-      <section id="tab-dash" class="tab glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Dashboard</h2>
-            <div id="today" class="small mt-1"></div>
-            <div class="small muted mt-1">Tip: tombol cutoff & end-of-day untuk simulasi scheduler.</div>
-          </div>
-          <div class="flex gap-2 flex-wrap">
-            <button id="seed" class="btn bg-emerald-600 hover:bg-emerald-500">➕ Seed Siswa Demo</button>
-            <button id="cutoff" class="btn bg-amber-600 hover:bg-amber-500">⏱ Run Cutoff (ALPA)</button>
-            <button id="eod" class="btn bg-indigo-600 hover:bg-indigo-500">🌙 Run End Of Day</button>
-          </div>
-        </div>
-
-        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-6">
-          <div class="glass rounded-2xl p-4"><div class="small muted">HADIR</div><div id="sH" class="text-2xl font-extrabold mt-1">0</div></div>
-          <div class="glass rounded-2xl p-4"><div class="small muted">TERLAMBAT</div><div id="sT" class="text-2xl font-extrabold mt-1">0</div></div>
-          <div class="glass rounded-2xl p-4"><div class="small muted">IZIN</div><div id="sI" class="text-2xl font-extrabold mt-1">0</div></div>
-          <div class="glass rounded-2xl p-4"><div class="small muted">SAKIT</div><div id="sS" class="text-2xl font-extrabold mt-1">0</div></div>
-          <div class="glass rounded-2xl p-4"><div class="small muted">ALPA</div><div id="sA" class="text-2xl font-extrabold mt-1">0</div></div>
-        </div>
-
-        <div class="mt-6 glass rounded-2xl p-5">
-          <div class="font-extrabold">Log Aktivitas</div>
-          <div id="logs" class="mt-3 space-y-2 max-h-[320px] overflow-auto pr-1"></div>
-        </div>
-      </section>
-
-      <!-- STUDENTS / QR -->
-      <section id="tab-students" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Kartu QR Siswa</h2>
-            <div class="small mt-1">Klik siswa → kartu QR tampil → bisa download (screenshot manual) / print.</div>
-          </div>
-          <div class="glass rounded-2xl px-4 py-2 small">
-            Payload format demo: <span class="mono">SCH12|KELAS|ABSEN</span>
-          </div>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-4 mt-6">
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold mb-2">Daftar Siswa</div>
-            <div class="small muted mb-3">Scope sesuai role (sekretaris/walas cuma kelasnya).</div>
-            <input id="studentSearch" class="w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                   placeholder="Cari nama / absen"/>
-            <div id="studentList" class="mt-4 divide-y divide-slate-800"></div>
-          </div>
-
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold mb-2">Preview Kartu</div>
-            <div class="small muted mb-3">Pilih siswa di sebelah kiri.</div>
-
-            <div id="card" class="bg-white rounded-[26px] p-6 text-center text-black hidden">
-              <div class="text-xs font-black tracking-[0.25em] uppercase text-slate-600">SMART GATE</div>
-              <div id="cardName" class="text-2xl font-extrabold mt-2 uppercase">—</div>
-              <div id="cardInfo" class="text-xs font-bold text-slate-600 mt-1">—</div>
-              <div class="mt-4 flex justify-center">
-                <div id="cardQR"></div>
-              </div>
-              <div id="cardPayload" class="mt-3 text-[10px] text-slate-500 mono break-all">—</div>
+        <section id="role-guru" class="role-section hidden space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-600 p-4 rounded-xl shadow-lg">
+                    <p class="text-sm opacity-80">Hadir Hari Ini</p>
+                    <h3 class="text-3xl font-black">280 / 300</h3>
+                </div>
+                <div class="bg-red-600 p-4 rounded-xl shadow-lg">
+                    <p class="text-sm opacity-80">Alpa / Bolos</p>
+                    <h3 class="text-3xl font-black">5</h3>
+                </div>
+                <div class="bg-orange-600 p-4 rounded-xl shadow-lg">
+                    <p class="text-sm opacity-80">Siswa Izin/Dispen</p>
+                    <h3 class="text-3xl font-black">15</h3>
+                </div>
             </div>
-
-            <div id="cardHint" class="small muted">
-              💡 Tip: di HP, kamu bisa screenshot kartu ini lalu print.
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                <h2 class="text-xl font-bold mb-4 text-emerald-400">Download Laporan (.xlsx)</h2>
+                <div class="flex flex-col gap-3">
+                    <button class="bg-slate-700 hover:bg-emerald-700 p-3 rounded text-left px-4 flex justify-between items-center transition">
+                        <span>Laporan Harian (28 Feb 2025)</span>
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="bg-slate-700 hover:bg-emerald-700 p-3 rounded text-left px-4 flex justify-between items-center transition">
+                        <span>Laporan Mingguan (Pekan 4 Feb)</span>
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SCAN -->
-      <section id="tab-scan" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Scan QR</h2>
-            <div class="small mt-1">Ini beneran kamera ya. Pastikan izin kamera di browser ✅</div>
-          </div>
-          <div class="glass rounded-2xl px-4 py-2 small">
-            Jam: <b id="cfgStart"></b> • Telat: <b id="cfgLate"></b> • Cutoff: <b id="cfgCut"></b>
-          </div>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-4 mt-6">
-          <div class="glass rounded-2xl p-4">
-            <div class="flex gap-2">
-              <button id="startCam" class="btn bg-cyan-600 hover:bg-cyan-500 flex-1">📷 Start</button>
-              <button id="stopCam" class="btn bg-rose-600 hover:bg-rose-500 flex-1 hidden">🛑 Stop</button>
-            </div>
-
-            <div class="mt-4 glass rounded-2xl p-3">
-              <div id="reader" class="w-full"></div>
-            </div>
-
-            <div id="scanResult" class="mt-4 hidden glass rounded-2xl p-4"></div>
-          </div>
-
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold">Panduan cepat</div>
-            <ul class="mt-3 small list-disc pl-5 space-y-1">
-              <li>Login sekretaris → scan untuk kelasnya.</li>
-              <li>Kalau status sudah IZIN/SAKIT/ALPA → scan ditolak (kecuali admin).</li>
-              <li>Hasil scan muncul di kotak bawah (HADIR/TERLAMBAT).</li>
-            </ul>
-
-            <div class="mt-5 glass rounded-2xl p-4">
-              <div class="font-extrabold mb-1">Test tanpa kamera (opsional)</div>
-              <div class="small muted">Tempel payload manual (buat debug).</div>
-              <div class="mt-2 flex gap-2">
-                <input id="manualPayload" class="flex-1 bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400 mono"
-                       placeholder="SCH12|X-1|1"/>
-                <button id="manualScan" class="btn bg-slate-700 hover:bg-slate-600">Proses</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- IZIN -->
-      <section id="tab-izin" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Set Izin / Sakit</h2>
-            <div class="small mt-1">Untuk walas/sekretaris (berdasarkan info grup WA).</div>
-          </div>
-          <div class="small muted">Yang bisa batalin idealnya Walas/Admin.</div>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-4 mt-6">
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold mb-2">Cari Siswa</div>
-            <input id="izinSearch" class="w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                   placeholder="Cari nama / absen"/>
-            <div id="izinRes" class="mt-4 space-y-2"></div>
-          </div>
-
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold">Aksi</div>
-            <div id="izinSelected" class="small mt-1 muted">Belum pilih siswa.</div>
-
-            <textarea id="izinNote" class="mt-4 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                      rows="3" placeholder="Catatan (opsional): 'Ortu chat di grup walas'"></textarea>
-
-            <div class="grid sm:grid-cols-2 gap-3 mt-4">
-              <button id="setIzin" class="btn bg-emerald-600 hover:bg-emerald-500">📝 SET IZIN</button>
-              <button id="setSakit" class="btn bg-indigo-600 hover:bg-indigo-500">🤒 SET SAKIT</button>
-              <button id="clearStatus" class="btn bg-slate-700 hover:bg-slate-600">↩️ BATALKAN</button>
-              <button id="toRekap" class="btn bg-slate-800 hover:bg-slate-700">📊 LIHAT REKAP</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- PIKET -->
-      <section id="tab-piket" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Panel Piket</h2>
-            <div class="small mt-1">Dispen keluar/balik & pulang cepat/sakit.</div>
-          </div>
-          <div class="small muted">Dispen = pause/resume (keluar lalu balik).</div>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-4 mt-6">
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold mb-2">Cari Siswa</div>
-            <input id="piketSearch" class="w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                   placeholder="Cari nama / absen"/>
-            <div id="piketRes" class="mt-4 space-y-2"></div>
-
-            <div id="piketSelected" class="small mt-4 muted">Belum pilih siswa.</div>
-
-            <textarea id="piketReason" class="mt-3 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"
-                      rows="3" placeholder="Alasan (opsional): lomba / urusan / dll"></textarea>
-
-            <label class="flex items-center gap-2 mt-3 small">
-              <input id="mustReturn" type="checkbox" class="scale-110">
-              Wajib kembali (khusus dispen)
-            </label>
-
-            <div class="grid sm:grid-cols-2 gap-3 mt-4">
-              <button id="dispenOut" class="btn bg-cyan-700 hover:bg-cyan-600">🚶 DISPEN KELUAR</button>
-              <button id="dispenBack" class="btn bg-cyan-500 hover:bg-cyan-400">🏫 DISPEN BALIK</button>
-              <button id="pulangSakit" class="btn bg-rose-600 hover:bg-rose-500">🤒 PULANG SAKIT</button>
-              <button id="pulangCepat" class="btn bg-amber-600 hover:bg-amber-500">🕒 PULANG CEPAT</button>
-            </div>
-          </div>
-
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold mb-2">Sedang Dispen (Belum Balik)</div>
-            <div id="outList" class="space-y-2"></div>
-            <div class="small muted mt-4">
-              Kalau sampai jam pulang belum balik → otomatis “Tidak Kembali” (di demo: klik Run End Of Day).
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- REKAP -->
-      <section id="tab-rekap" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Rekap Harian</h2>
-            <div class="small mt-1">Filter scope sesuai role. Export CSV untuk tes.</div>
-          </div>
-          <div class="flex gap-2">
-            <button id="exportCsv" class="btn bg-emerald-600 hover:bg-emerald-500">⬇️ Export CSV</button>
-            <button id="refresh" class="btn bg-slate-700 hover:bg-slate-600">🔄 Refresh</button>
-          </div>
-        </div>
-
-        <div class="mt-5 glass rounded-2xl p-4 overflow-auto">
-          <table class="w-full text-sm">
-            <thead class="text-slate-300">
-              <tr class="border-b border-slate-800">
-                <th class="text-left p-3">Nama</th>
-                <th class="text-left p-3">Kelas</th>
-                <th class="text-left p-3">Absen</th>
-                <th class="text-left p-3">Status</th>
-                <th class="text-left p-3">Masuk</th>
-                <th class="text-left p-3">Telat (m)</th>
-                <th class="text-left p-3">Event</th>
-              </tr>
-            </thead>
-            <tbody id="rekapBody" class="text-slate-100"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ADMIN -->
-      <section id="tab-admin" class="tab hidden glass rounded-[28px] p-6">
-        <div class="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h2 class="text-xl font-extrabold">Admin</h2>
-            <div class="small mt-1">Atur jam sekolah & reset data demo.</div>
-          </div>
-          <button id="reset" class="btn bg-rose-600 hover:bg-rose-500">🧨 Reset Demo</button>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-4 mt-6">
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold">Jam Aturan</div>
-            <div class="grid grid-cols-2 gap-3 mt-4">
-              <div>
-                <div class="small muted">Jam mulai</div>
-                <input id="startTime" type="time" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"/>
-              </div>
-              <div>
-                <div class="small muted">Batas telat</div>
-                <input id="lateTime" type="time" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"/>
-              </div>
-              <div>
-                <div class="small muted">Cutoff ALPA</div>
-                <input id="cutTime" type="time" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"/>
-              </div>
-              <div>
-                <div class="small muted">Jam pulang</div>
-                <input id="eodTime" type="time" class="mt-2 w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400"/>
-              </div>
-            </div>
-            <button id="saveCfg" class="btn bg-cyan-600 hover:bg-cyan-500 mt-4 w-full">💾 Simpan</button>
-          </div>
-
-          <div class="glass rounded-2xl p-5">
-            <div class="font-extrabold">Kelas Demo</div>
-            <div class="small mt-2 muted">
-              Demo ini seed 2 kelas biar keliatan scoping:
-              <span class="mono">X-1</span> & <span class="mono">X-2</span>.
-            </div>
-            <div class="small mt-4">
-              ⚠️ Untuk WA beneran: jangan taruh token di HTML. Harus backend.
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </section>
-  </div>
-
-<script>
-/* =======================
-   LocalStorage DB
-======================= */
-const LS = {
-  cfg:"sg_cfg_v2",
-  user:"sg_user_v2",
-  students:"sg_students_v2",
-  day:"sg_day_v2",     // {dateIso:{studentKey:{status,checkin,lateMin,note}}}
-  events:"sg_events_v2", // {dateIso:[{...}]}
-  logs:"sg_logs_v2",
-  scanner:"sg_scanner_v2"
-};
-
-const DEFAULT_CFG = { start:"07:00", late:"07:15", cutoff:"08:30", eod:"14:00" };
-
-const USERS = {
-  sekretaris:{ pass:"1234", role:"SEKRETARIS", scope:"X-1" },
-  piket:{ pass:"1234", role:"PIKET", scope:"ALL" },
-  walas:{ pass:"1234", role:"WALAS", scope:"X-1" },
-  admin:{ pass:"1234", role:"ADMIN", scope:"ALL" },
-};
-
-const $ = (id)=>document.getElementById(id);
-
-const load = (k, fb)=>{ try{ const x=localStorage.getItem(k); return x?JSON.parse(x):fb; }catch{return fb;} };
-const save = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
-
-const todayISO=()=>new Date(new Date().getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-const nowHHMM=()=>{ const d=new Date(); return String(d.getHours()).padStart(2,'0')+":"+String(d.getMinutes()).padStart(2,'0'); };
-const t2m=(t)=>{ const [h,m]=t.split(":").map(Number); return h*60+m; };
-const fmt=(iso)=>{ const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; };
-const esc=(s)=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-
-function log(action, detail=""){
-  const arr = load(LS.logs, []);
-  arr.unshift({ts:new Date().toISOString(), action, detail});
-  save(LS.logs, arr.slice(0,120));
-  renderLogs();
-}
-
-function getCfg(){ return load(LS.cfg, DEFAULT_CFG); }
-function setCfg(c){ save(LS.cfg, c); }
-
-function getUser(){ return load(LS.user, null); }
-function setUser(u){ save(LS.user, u); }
-
-function getStudents(){ return load(LS.students, []); }
-function setStudents(s){ save(LS.students, s); }
-
-function getDayAll(){ return load(LS.day, {}); }
-function setDayAll(d){ save(LS.day, d); }
-
-function getEventsAll(){ return load(LS.events, {}); }
-function setEventsAll(e){ save(LS.events, e); }
-
-function getDay(date){
-  const all = getDayAll();
-  return all[date] || {};
-}
-function setDay(date, dayObj){
-  const all = getDayAll();
-  all[date] = dayObj;
-  setDayAll(all);
-}
-function getEvents(date){
-  const all = getEventsAll();
-  return all[date] || [];
-}
-function setEvents(date, arr){
-  const all = getEventsAll();
-  all[date] = arr;
-  setEventsAll(all);
-}
-
-function canScope(st){
-  const u = getUser();
-  if(!u) return false;
-  if(u.scope==="ALL") return true;
-  return st.className === u.scope;
-}
-
-function statusChip(s){
-  const base="chip";
-  if(s==="HADIR") return `<span class="${base}" style="background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.25);color:#86efac">HADIR</span>`;
-  if(s==="TERLAMBAT") return `<span class="${base}" style="background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.25);color:#fde68a">TERLAMBAT</span>`;
-  if(s==="IZIN") return `<span class="${base}" style="background:rgba(14,165,233,.14);border-color:rgba(14,165,233,.25);color:#7dd3fc">IZIN</span>`;
-  if(s==="SAKIT") return `<span class="${base}" style="background:rgba(99,102,241,.14);border-color:rgba(99,102,241,.25);color:#c7d2fe">SAKIT</span>`;
-  if(s==="ALPA") return `<span class="${base}" style="background:rgba(244,63,94,.14);border-color:rgba(244,63,94,.25);color:#fda4af">ALPA</span>`;
-  return `<span class="${base}" style="background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.20);color:#e2e8f0">-</span>`;
-}
-
-/* =======================
-   Seed demo students
-======================= */
-function seedStudents(){
-  const existing = getStudents();
-  if(existing.length){ log("Seed skipped","Data siswa sudah ada."); return; }
-
-  const demo = [
-    {name:"GEMA", className:"X-1", absen:"1", parent:"62812xxxxxxx"},
-    {name:"RAKA", className:"X-1", absen:"2", parent:"62813xxxxxxx"},
-    {name:"SITI", className:"X-1", absen:"3", parent:"62814xxxxxxx"},
-    {name:"DANU", className:"X-2", absen:"1", parent:"62815xxxxxxx"},
-    {name:"NABILA", className:"X-2", absen:"2", parent:"62816xxxxxxx"},
-  ].map(s => ({
-    ...s,
-    // payload rapi untuk QR (demo)
-    payload: `SCH12|${s.className}|${s.absen}`
-  }));
-
-  setStudents(demo);
-  log("Seed siswa", "5 siswa demo ditambahkan (X-1 & X-2).");
-  renderStudents();
-  refreshAll();
-}
-
-/* =======================
-   Attendance logic
-======================= */
-function ensureRow(dayObj, st){
-  const key = `${st.className}-${st.absen}`; // key unik di demo
-  if(!dayObj[key]) dayObj[key] = { status:"-", checkin:"-", lateMin:"-", note:"" };
-  return key;
-}
-
-function parsePayload(raw){
-  const parts = String(raw||"").trim().split("|");
-  if(parts.length !== 3) return null;
-  const [school, cls, absen] = parts;
-  if(!school || !cls || !absen) return null;
-  return { school, className: cls, absen };
-}
-
-function findStudentByPayload(raw){
-  const p = parsePayload(raw);
-  if(!p) return null;
-  return getStudents().find(s => s.className===p.className && s.absen===p.absen);
-}
-
-function scanProcess(raw){
-  const u = getUser();
-  const cfg = getCfg();
-  const st = findStudentByPayload(raw);
-  if(!st) return {ok:false, msg:"QR tidak valid / tidak dikenal."};
-  if(!canScope(st)) return {ok:false, msg:"Akses ditolak (beda kelas/scope)."};
-  if(!["SEKRETARIS","ADMIN"].includes(u.role)) return {ok:false, msg:"Role kamu tidak bisa scan."};
-
-  const date = todayISO();
-  const day = getDay(date);
-  const key = ensureRow(day, st);
-  const row = day[key];
-
-  if(["IZIN","SAKIT","ALPA"].includes(row.status) && u.role!=="ADMIN"){
-    return {ok:false, msg:`Status sudah ${row.status}. Hubungi walas/admin untuk ubah.`};
-  }
-  if(row.checkin !== "-" ){
-    return {ok:false, msg:`Sudah scan hari ini (${row.checkin}).`};
-  }
-
-  const now = nowHHMM();
-  const nowMin = t2m(now);
-  const startMin = t2m(cfg.start);
-  const lateMin = t2m(cfg.late);
-
-  let status="HADIR", late=0;
-  if(nowMin > startMin){
-    status="TERLAMBAT";
-    late = Math.max(0, nowMin - startMin);
-  }
-  row.status = status;
-  row.checkin = now;
-  row.lateMin = status==="TERLAMBAT" ? late : 0;
-
-  day[key]=row;
-  setDay(date, day);
-
-  log("Scan", `${st.name} (${st.className}) → ${status}${status==="TERLAMBAT"?` (${late}m)`:""} @ ${now}`);
-  refreshAll();
-  return {ok:true, msg:`${st.name} • ${status} • ${now}`, status, st, row};
-}
-
-function setPrimary(st, status, note){
-  const u = getUser();
-  if(!["SEKRETARIS","WALAS","ADMIN"].includes(u.role)) return {ok:false, msg:"Role kamu tidak bisa set izin/sakit."};
-  if(!canScope(st) && u.role!=="ADMIN") return {ok:false, msg:"Akses ditolak (beda kelas)."};
-  const date=todayISO();
-  const day=getDay(date);
-  const key=ensureRow(day, st);
-  day[key].status=status;
-  day[key].checkin="-";
-  day[key].lateMin="-";
-  day[key].note=note||"";
-  setDay(date, day);
-  log("Set status", `${st.name} → ${status} (oleh ${u.role})`);
-  refreshAll();
-  return {ok:true, msg:"OK"};
-}
-
-function clearPrimary(st){
-  const u=getUser();
-  if(!["WALAS","ADMIN"].includes(u.role)) return {ok:false, msg:"Hanya Walas/Admin bisa batalkan."};
-  const date=todayISO();
-  const day=getDay(date);
-  const key=`${st.className}-${st.absen}`;
-  if(!day[key]) return {ok:false, msg:"Belum ada data hari ini."};
-  day[key]={status:"-",checkin:"-",lateMin:"-",note:""};
-  setDay(date, day);
-  log("Batalkan status", `${st.name} direset (oleh ${u.role})`);
-  refreshAll();
-  return {ok:true, msg:"Reset OK"};
-}
-
-function addEvent(st, type, reason, mustReturn){
-  const u=getUser();
-  if(!["PIKET","ADMIN"].includes(u.role)) return {ok:false, msg:"Hanya Piket/Admin bisa input event."};
-
-  const date=todayISO();
-  const events=getEvents(date);
-  const now=nowHHMM();
-
-  if(type==="DISPEN_OUT"){
-    const active = [...events].reverse().find(e=>e.key===`${st.className}-${st.absen}` && e.type==="DISPEN" && e.state==="OUT");
-    if(active) return {ok:false, msg:"Masih DISPEN OUT. Balikin dulu."};
-
-    events.push({
-      id: crypto.randomUUID(),
-      key:`${st.className}-${st.absen}`,
-      name:st.name, className:st.className, absen:st.absen,
-      type:"DISPEN", state:"OUT",
-      out: now, back: null,
-      mustReturn: !!mustReturn,
-      reason: reason||""
-    });
-    setEvents(date, events);
-    log("Event", `${st.name} DISPEN OUT @ ${now}`);
-    refreshAll();
-    return {ok:true, msg:"Dispen keluar tersimpan."};
-  }
-
-  if(type==="DISPEN_BACK"){
-    const idx=[...events].reverse().findIndex(e=>e.key===`${st.className}-${st.absen}` && e.type==="DISPEN" && e.state==="OUT");
-    if(idx===-1) return {ok:false, msg:"Tidak ada DISPEN OUT aktif."};
-    const real=events.length-1-idx;
-    events[real].back=now;
-    events[real].state="RETURNED";
-    setEvents(date, events);
-    log("Event", `${st.name} DISPEN BACK @ ${now}`);
-    refreshAll();
-    return {ok:true, msg:"Dispen balik tersimpan."};
-  }
-
-  if(type==="PULANG_SAKIT" || type==="PULANG_CEPAT"){
-    events.push({
-      id: crypto.randomUUID(),
-      key:`${st.className}-${st.absen}`,
-      name:st.name, className:st.className, absen:st.absen,
-      type: type, state:"OUT",
-      out: now, back:null,
-      mustReturn:false,
-      reason: reason||""
-    });
-    setEvents(date, events);
-    log("Event", `${st.name} ${type.replace("_"," ")} @ ${now}`);
-    refreshAll();
-    return {ok:true, msg:"Event tersimpan."};
-  }
-
-  return {ok:false, msg:"Event unknown."};
-}
-
-function runCutoff(){
-  const cfg=getCfg();
-  const date=todayISO();
-  const students=getStudents();
-  const day=getDay(date);
-
-  let changed=0;
-  students.forEach(st=>{
-    const key=`${st.className}-${st.absen}`;
-    if(!day[key]) day[key]={status:"-",checkin:"-",lateMin:"-",note:""};
-    const s=day[key].status;
-
-    if(["HADIR","TERLAMBAT","IZIN","SAKIT","ALPA"].includes(s)) return;
-
-    day[key].status="ALPA";
-    day[key].checkin="-";
-    day[key].lateMin="-";
-    changed++;
-  });
-
-  setDay(date, day);
-  log("Cutoff ALPA", `${changed} siswa jadi ALPA (cutoff ${cfg.cutoff}).`);
-  refreshAll();
-}
-
-function runEOD(){
-  const date=todayISO();
-  const events=getEvents(date);
-  let updated=0;
-  events.forEach(e=>{
-    if(e.type==="DISPEN" && e.state==="OUT"){
-      e.state="NOT_RETURNED";
-      updated++;
-    }
-  });
-  setEvents(date, events);
-  log("End Of Day", `${updated} dispen ditandai TIDAK KEMBALI.`);
-  refreshAll();
-}
-
-/* =======================
-   Render
-======================= */
-function renderLogs(){
-  const arr=load(LS.logs, []);
-  const el=$("logs");
-  el.innerHTML = arr.length ? arr.map(x=>{
-    const t=new Date(x.ts);
-    const hh=String(t.getHours()).padStart(2,'0');
-    const mm=String(t.getMinutes()).padStart(2,'0');
-    return `<div class="glass rounded-2xl p-3">
-      <div class="flex items-center justify-between gap-2">
-        <div class="font-extrabold text-sm">${esc(x.action)}</div>
-        <div class="mono text-xs text-slate-500">${hh}:${mm}</div>
-      </div>
-      ${x.detail?`<div class="small mt-1">${esc(x.detail)}</div>`:""}
-    </div>`;
-  }).join("") : `<div class="small muted italic py-6 text-center">Belum ada log.</div>`;
-}
-
-function renderStats(){
-  const date=todayISO();
-  const day=getDay(date);
-  const students=getStudents();
-
-  const c={HADIR:0,TERLAMBAT:0,IZIN:0,SAKIT:0,ALPA:0};
-  students.forEach(st=>{
-    const key=`${st.className}-${st.absen}`;
-    const s=day[key]?.status;
-    if(c[s]!==undefined) c[s]++;
-  });
-
-  $("sH").innerText=c.HADIR;
-  $("sT").innerText=c.TERLAMBAT;
-  $("sI").innerText=c.IZIN;
-  $("sS").innerText=c.SAKIT;
-  $("sA").innerText=c.ALPA;
-}
-
-function renderStudents(){
-  const u=getUser();
-  const list=getStudents().filter(canScope);
-  const q=($("studentSearch")?.value||"").trim().toUpperCase();
-  const filtered = q ? list.filter(s => s.name.includes(q) || s.absen===q) : list;
-
-  $("studentList").innerHTML = filtered.length ? filtered.map(s=>`
-    <button class="w-full text-left py-3 flex items-center justify-between gap-3 hover:bg-slate-950/20 rounded-2xl px-3"
-            onclick="selectCard('${s.className}','${s.absen}')">
-      <div>
-        <div class="font-extrabold">${s.name}</div>
-        <div class="small muted">${s.className} • Absen ${s.absen}</div>
-      </div>
-      <div class="mono text-xs text-slate-500">${esc(s.payload)}</div>
-    </button>
-  `).join("") : `<div class="small muted italic py-6 text-center">Belum ada siswa. Login admin → Seed.</div>`;
-}
-
-window.selectCard = (cls, absen)=>{
-  const st=getStudents().find(s=>s.className===cls && s.absen===absen);
-  if(!st) return;
-
-  $("card").classList.remove("hidden");
-  $("cardHint").classList.add("hidden");
-
-  $("cardName").innerText=st.name;
-  $("cardInfo").innerText=`${st.className} • ABSEN ${st.absen}`;
-  $("cardPayload").innerText=st.payload;
-
-  // render QR
-  $("cardQR").innerHTML="";
-  new QRCode($("cardQR"), { text: st.payload, width: 210, height: 210, correctLevel: QRCode.CorrectLevel.H });
-
-  log("QR Card", `Preview kartu: ${st.name} (${st.className})`);
-};
-
-function renderCfg(){
-  const cfg=getCfg();
-  $("cfgStart").innerText=cfg.start;
-  $("cfgLate").innerText=cfg.late;
-  $("cfgCut").innerText=cfg.cutoff;
-
-  $("startTime").value=cfg.start;
-  $("lateTime").value=cfg.late;
-  $("cutTime").value=cfg.cutoff;
-  $("eodTime").value=cfg.eod;
-}
-
-function renderOutList(){
-  const date=todayISO();
-  const events=getEvents(date);
-  const out = events.filter(e=>e.type==="DISPEN" && e.state==="OUT");
-
-  $("outList").innerHTML = out.length ? out.map(e=>`
-    <div class="glass rounded-2xl p-3 flex items-center justify-between gap-3">
-      <div>
-        <div class="font-extrabold">${esc(e.name)} <span class="small muted">(${esc(e.className)}-${esc(e.absen)})</span></div>
-        <div class="small muted">Keluar <b>${esc(e.out)}</b> • ${e.mustReturn ? "Wajib kembali" : "Boleh tidak kembali"} ${e.reason?`• ${esc(e.reason)}`:""}</div>
-      </div>
-      <button class="btn bg-cyan-500 hover:bg-cyan-400" onclick="quickBack('${esc(e.className)}','${esc(e.absen)}')">BALIK</button>
-    </div>
-  `).join("") : `<div class="small muted italic py-6 text-center">Tidak ada yang sedang dispen.</div>`;
-}
-
-window.quickBack = (cls, absen)=>{
-  const st=getStudents().find(s=>s.className===cls && s.absen===absen);
-  if(!st) return;
-  const r=addEvent(st,"DISPEN_BACK","",false);
-  toast(r.ok?`✅ ${r.msg}`:`⚠️ ${r.msg}`);
-};
-
-function renderRekap(){
-  const u=getUser();
-  const date=todayISO();
-  const students=getStudents().filter(canScope);
-  const day=getDay(date);
-  const events=getEvents(date);
-
-  const eventLabel=(st)=>{
-    const key=`${st.className}-${st.absen}`;
-    const e=events.filter(x=>x.key===key);
-    if(!e.length) return "-";
-    return e.map(x=>{
-      if(x.type==="DISPEN"){
-        if(x.state==="RETURNED") return `DISPEN ${x.out}-${x.back}`;
-        if(x.state==="NOT_RETURNED") return `DISPEN ${x.out}-NR`;
-        return `DISPEN ${x.out}-OUT`;
-      }
-      if(x.type==="PULANG_SAKIT") return `PULANG SAKIT ${x.out}`;
-      if(x.type==="PULANG_CEPAT") return `PULANG CEPAT ${x.out}`;
-      return x.type;
-    }).join(", ");
-  };
-
-  $("rekapBody").innerHTML = students.map(st=>{
-    const key=`${st.className}-${st.absen}`;
-    const r=day[key] || {status:"-",checkin:"-",lateMin:"-",note:""};
-    return `<tr class="border-b border-slate-800">
-      <td class="p-3 font-extrabold">${esc(st.name)}</td>
-      <td class="p-3 text-slate-300">${esc(st.className)}</td>
-      <td class="p-3 text-slate-300">${esc(st.absen)}</td>
-      <td class="p-3">${statusChip(r.status)}</td>
-      <td class="p-3 mono">${esc(r.checkin)}</td>
-      <td class="p-3 mono">${esc(String(r.lateMin))}</td>
-      <td class="p-3 text-slate-300">${esc(eventLabel(st))}</td>
-    </tr>`;
-  }).join("");
-}
-
-function refreshAll(){
-  $("today").innerText = `Tanggal ${fmt(todayISO())} • Jam ${nowHHMM()}`;
-  renderStats();
-  renderStudents();
-  renderCfg();
-  renderOutList();
-  renderRekap();
-}
-
-/* =======================
-   Search helpers
-======================= */
-let selectedIzin=null;
-let selectedPiket=null;
-
-function searchList(q, scope=true){
-  const text=(q||"").trim().toUpperCase();
-  let list=getStudents();
-  if(scope) list=list.filter(canScope);
-  if(!text) return [];
-  return list.filter(s=>s.name.includes(text) || s.absen===text).slice(0,10);
-}
-function renderRes(elId, res, onPick){
-  const el=$(elId);
-  el.innerHTML = res.length ? res.map(s=>`
-    <button class="w-full text-left glass rounded-2xl p-3 hover:border-cyan-400/30"
-            onclick="${onPick}('${s.className}','${s.absen}')">
-      <div class="font-extrabold">${esc(s.name)} <span class="small muted">(${esc(s.className)} • ${esc(s.absen)})</span></div>
-      <div class="small muted mono">${esc(s.payload)}</div>
-    </button>
-  `).join("") : `<div class="small muted italic">Tidak ada hasil.</div>`;
-}
-
-window.pickIzin=(cls,absen)=>{
-  selectedIzin = getStudents().find(s=>s.className===cls && s.absen===absen);
-  $("izinSelected").innerHTML = selectedIzin ? `<b>${esc(selectedIzin.name)}</b> • ${esc(selectedIzin.className)} • Absen ${esc(selectedIzin.absen)}` : "Belum pilih siswa.";
-};
-window.pickPiket=(cls,absen)=>{
-  selectedPiket = getStudents().find(s=>s.className===cls && s.absen===absen);
-  $("piketSelected").innerHTML = selectedPiket ? `<b>${esc(selectedPiket.name)}</b> • ${esc(selectedPiket.className)} • Absen ${esc(selectedPiket.absen)}` : "Belum pilih siswa.";
-};
-
-function toast(msg){
-  const d=document.createElement("div");
-  d.className="fixed bottom-4 left-1/2 -translate-x-1/2 glass px-4 py-3 rounded-2xl text-sm z-[9999]";
-  d.textContent=msg;
-  document.body.appendChild(d);
-  setTimeout(()=>d.remove(), 2200);
-}
-
-/* =======================
-   Camera scan
-======================= */
-let scanner = null;
-async function startScanner(){
-  if(scanner) return;
-  scanner = new Html5Qrcode("reader");
-
-  $("startCam").classList.add("hidden");
-  $("stopCam").classList.remove("hidden");
-
-  try{
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 12, qrbox: 260 },
-      (decodedText)=>{
-        const r = scanProcess(decodedText);
-        $("scanResult").classList.remove("hidden");
-        $("scanResult").innerHTML = r.ok
-          ? `<div class="text-lg font-extrabold">✅ ${esc(r.msg)}</div>`
-          : `<div class="text-lg font-extrabold">⚠️ ${esc(r.msg)}</div>`;
-        if(r.ok) stopScanner(); // auto stop biar ga double scan
-      },
-      ()=>{}
-    );
-    log("Scanner", "Kamera aktif.");
-  }catch(e){
-    log("Scanner error", String(e));
-    toast("Gagal akses kamera. Cek permission browser.");
-    await stopScanner();
-  }
-}
-async function stopScanner(){
-  if(!scanner) return;
-  try{ await scanner.stop(); }catch{}
-  try{ await scanner.clear(); }catch{}
-  scanner = null;
-  $("startCam").classList.remove("hidden");
-  $("stopCam").classList.add("hidden");
-  log("Scanner", "Kamera stop.");
-}
-
-/* =======================
-   NAV / ROLE ACCESS
-======================= */
-function setTab(name){
-  document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
-  $("tab-"+name).classList.remove("hidden");
-  document.querySelectorAll(".navbtn").forEach(b=>{
-    b.classList.toggle("active", b.dataset.tab===name);
-  });
-  if(name!=="scan") stopScanner();
-  refreshAll();
-}
-
-function applyRole(){
-  const u=getUser();
-  const btns=[...document.querySelectorAll(".navbtn")];
-  const show = (tab, ok)=> btns.find(x=>x.dataset.tab===tab)?.classList.toggle("hidden", !ok);
-
-  // default
-  show("dash", true); show("students", true); show("rekap", true);
-
-  if(u.role==="SEKRETARIS"){
-    show("scan", true); show("izin", true); show("piket", false); show("admin", false);
-    setTab("scan");
-  } else if(u.role==="WALAS"){
-    show("scan", false); show("izin", true); show("piket", false); show("admin", false);
-    setTab("rekap");
-  } else if(u.role==="PIKET"){
-    show("scan", false); show("izin", false); show("piket", true); show("admin", false);
-    setTab("piket");
-  } else if(u.role==="ADMIN"){
-    show("scan", true); show("izin", true); show("piket", true); show("admin", true);
-    setTab("dash");
-  }
-}
-
-document.querySelectorAll(".navbtn").forEach(b=>{
-  b.addEventListener("click", ()=>setTab(b.dataset.tab));
-});
-
-/* =======================
-   Wire UI
-======================= */
-$("login").onclick=()=>{
-  const uu=$("u").value.trim().toLowerCase();
-  const pp=$("p").value.trim();
-  const acc=USERS[uu];
-  if(!acc || acc.pass!==pp) return toast("❌ Login salah");
-
-  setUser({ username:uu, role:acc.role, scope:acc.scope });
-
-  $("who").classList.remove("hidden");
-  $("logout").classList.remove("hidden");
-  $("who").innerHTML = `<div class="small muted">Login sebagai</div><div class="font-extrabold">${acc.role} <span class="muted">(${uu})</span></div>`;
-
-  $("viewLogin").classList.add("hidden");
-  $("viewApp").classList.remove("hidden");
-
-  applyRole();
-  refreshAll();
-  toast("✅ Login sukses");
-};
-
-$("logout").onclick=()=>{
-  localStorage.removeItem(LS.user);
-  stopScanner();
-  location.reload();
-};
-
-$("seed").onclick=seedStudents;
-$("cutoff").onclick=()=>{ runCutoff(); toast("⏱ Cutoff done"); };
-$("eod").onclick=()=>{ runEOD(); toast("🌙 EOD done"); };
-
-$("studentSearch").addEventListener("input", renderStudents);
-
-$("startCam").onclick=startScanner;
-$("stopCam").onclick=stopScanner;
-
-$("manualScan").onclick=()=>{
-  const raw=$("manualPayload").value;
-  const r=scanProcess(raw);
-  $("scanResult").classList.remove("hidden");
-  $("scanResult").innerHTML = r.ok ? `<div class="text-lg font-extrabold">✅ ${esc(r.msg)}</div>` : `<div class="text-lg font-extrabold">⚠️ ${esc(r.msg)}</div>`;
-};
-
-$("izinSearch").addEventListener("input",(e)=>{
-  const u=getUser();
-  const res=searchList(e.target.value, u.role!=="ADMIN"); // admin boleh semua
-  renderRes("izinRes", res, "pickIzin");
-});
-$("piketSearch").addEventListener("input",(e)=>{
-  const res=searchList(e.target.value, false);
-  renderRes("piketRes", res, "pickPiket");
-});
-
-$("setIzin").onclick=()=>{
-  if(!selectedIzin) return toast("Pilih siswa dulu.");
-  const r=setPrimary(selectedIzin,"IZIN",$("izinNote").value.trim());
-  toast(r.ok? "✅ IZIN diset":"⚠️ "+r.msg);
-};
-$("setSakit").onclick=()=>{
-  if(!selectedIzin) return toast("Pilih siswa dulu.");
-  const r=setPrimary(selectedIzin,"SAKIT",$("izinNote").value.trim());
-  toast(r.ok? "✅ SAKIT diset":"⚠️ "+r.msg);
-};
-$("clearStatus").onclick=()=>{
-  if(!selectedIzin) return toast("Pilih siswa dulu.");
-  const r=clearPrimary(selectedIzin);
-  toast(r.ok? "✅ Dibatalkan":"⚠️ "+r.msg);
-};
-$("toRekap").onclick=()=>setTab("rekap");
-
-$("dispenOut").onclick=()=>{
-  if(!selectedPiket) return toast("Pilih siswa dulu.");
-  const r=addEvent(selectedPiket,"DISPEN_OUT",$("piketReason").value.trim(), $("mustReturn").checked);
-  toast(r.ok? "✅ "+r.msg:"⚠️ "+r.msg);
-};
-$("dispenBack").onclick=()=>{
-  if(!selectedPiket) return toast("Pilih siswa dulu.");
-  const r=addEvent(selectedPiket,"DISPEN_BACK","",false);
-  toast(r.ok? "✅ "+r.msg:"⚠️ "+r.msg);
-};
-$("pulangSakit").onclick=()=>{
-  if(!selectedPiket) return toast("Pilih siswa dulu.");
-  const r=addEvent(selectedPiket,"PULANG_SAKIT",$("piketReason").value.trim(), false);
-  toast(r.ok? "✅ "+r.msg:"⚠️ "+r.msg);
-};
-$("pulangCepat").onclick=()=>{
-  if(!selectedPiket) return toast("Pilih siswa dulu.");
-  const r=addEvent(selectedPiket,"PULANG_CEPAT",$("piketReason").value.trim(), false);
-  toast(r.ok? "✅ "+r.msg:"⚠️ "+r.msg);
-};
-
-$("exportCsv").onclick=()=>{
-  const u=getUser();
-  const date=todayISO();
-  const students=getStudents().filter(canScope);
-  const day=getDay(date);
-  const events=getEvents(date);
-
-  const eventLabel=(st)=>{
-    const key=`${st.className}-${st.absen}`;
-    const e=events.filter(x=>x.key===key);
-    if(!e.length) return "";
-    return e.map(x=>{
-      if(x.type==="DISPEN"){
-        if(x.state==="RETURNED") return `DISPEN ${x.out}-${x.back}`;
-        if(x.state==="NOT_RETURNED") return `DISPEN ${x.out}-NR`;
-        return `DISPEN ${x.out}-OUT`;
-      }
-      if(x.type==="PULANG_SAKIT") return `PULANG_SAKIT ${x.out}`;
-      if(x.type==="PULANG_CEPAT") return `PULANG_CEPAT ${x.out}`;
-      return x.type;
-    }).join(" | ");
-  };
-
-  const rows=[];
-  rows.push(`Tanggal,${fmt(date)}`);
-  rows.push("");
-  rows.push(`Nama,Kelas,Absen,Status,Masuk,TelatMenit,Event`);
-  students.forEach(st=>{
-    const key=`${st.className}-${st.absen}`;
-    const r=day[key] || {status:"-",checkin:"-",lateMin:"-",note:""};
-    const line = [
-      `"${st.name}"`,
-      `"${st.className}"`,
-      `"${st.absen}"`,
-      `"${r.status}"`,
-      `"${r.checkin}"`,
-      `"${r.lateMin}"`,
-      `"${eventLabel(st)}"`
-    ].join(",");
-    rows.push(line);
-  });
-
-  const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`REKAP_${date}.csv`;
-  a.click();
-  toast("⬇️ CSV diunduh");
-};
-
-$("refresh").onclick=()=>{ refreshAll(); toast("🔄 Refreshed"); };
-
-$("reset").onclick=()=>{
-  const u=getUser();
-  if(!u || u.role!=="ADMIN") return toast("Hanya admin.");
-  Object.values(LS).forEach(k=>localStorage.removeItem(k));
-  toast("🧨 Reset done");
-  location.reload();
-};
-
-$("saveCfg").onclick=()=>{
-  const u=getUser();
-  if(!u || u.role!=="ADMIN") return toast("Hanya admin.");
-  const c={
-    start:$("startTime").value || DEFAULT_CFG.start,
-    late:$("lateTime").value || DEFAULT_CFG.late,
-    cutoff:$("cutTime").value || DEFAULT_CFG.cutoff,
-    eod:$("eodTime").value || DEFAULT_CFG.eod
-  };
-  setCfg(c);
-  log("Config", JSON.stringify(c));
-  renderCfg();
-  toast("✅ Config disimpan");
-};
-
-function boot(){
-  if(!localStorage.getItem(LS.cfg)) setCfg(DEFAULT_CFG);
-
-  const u=getUser();
-  if(u){
-    $("who").classList.remove("hidden");
-    $("logout").classList.remove("hidden");
-    $("who").innerHTML = `<div class="small muted">Login sebagai</div><div class="font-extrabold">${u.role} <span class="muted">(${u.username})</span></div>`;
-    $("viewLogin").classList.add("hidden");
-    $("viewApp").classList.remove("hidden");
-    applyRole();
-    refreshAll();
-  }else{
-    renderCfg();
-    renderLogs();
-  }
-
-  setInterval(()=>{ if(!$("viewApp").classList.contains("hidden")) $("today").innerText=`Tanggal ${fmt(todayISO())} • Jam ${nowHHMM()}`; }, 10000);
-}
-boot();
-</script>
+        </section>
+
+    </main>
+
+    <script>
+        function switchRole(role) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.role-section').forEach(s => s.classList.add('hidden'));
+            // Tampilkan yang dipilih
+            document.getElementById('role-' + role).classList.remove('hidden');
+
+            // Ganti gaya tombol nav
+            document.querySelectorAll('.role-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'font-bold');
+                b.classList.add('hover:bg-slate-700', 'text-slate-400');
+            });
+            
+            const activeBtn = document.getElementById('btn-' + role);
+            activeBtn.classList.remove('hover:bg-slate-700', 'text-slate-400');
+            activeBtn.classList.add('bg-blue-600', 'font-bold', 'text-white');
+        }
+
+        function kirimWA(nama, status) {
+            alert("Sistem Backend: " + nama + " statusnya " + status + ".\nBot WhatsApp sedang mengirim pesan otomatis ke Orang Tua...");
+        }
+    </script>
 </body>
 </html>
