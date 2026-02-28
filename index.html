@@ -3,132 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi SMA 12 | Ekstrem Mode</title>
+    <title>Dzuhur 12 - Smart Gate V4</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0d1117">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d1117; color: #c9d1d9; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
+        .active-tab { background: #0891b2; color: white; box-shadow: 0 0 20px rgba(8, 145, 178, 0.5); }
+        .active-mode-islam { background: #15803d; color: white; border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+        .active-mode-kristen { background: #1d4ed8; color: white; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        #reader { border: none !important; border-radius: 1.5rem; overflow: hidden; background: #000; }
+        .log-item { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col items-center justify-center p-4">
+<body class="pb-10">
 
-    <div id="login-page" class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black text-blue-500 italic">SMART PRESENCE</h1>
-            <p class="text-slate-400">Silahkan login untuk mengakses sistem</p>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm mb-1 text-slate-400">Username</label>
-                <input type="text" id="username" placeholder="Contoh: X-1 atau Nama Guru" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm mb-1 text-slate-400">Password</label>
-                <input type="password" id="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button onclick="prosesLogin()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold text-lg transition duration-300">MASUK</button>
-        </div>
-        <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden italic">Username atau Password salah!</p>
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center gap-4 transition-opacity duration-500">
+        <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-cyan-400 font-bold text-[10px] tracking-[0.3em] animate-pulse uppercase">SINKRONISASI DATABASE...</p>
     </div>
 
-    <div id="main-app" class="hidden w-full max-w-5xl">
-        <header class="bg-blue-700 p-6 rounded-t-2xl flex justify-between items-center shadow-lg">
-            <div>
-                <h2 id="display-user" class="text-2xl font-bold">User: -</h2>
-                <p id="display-role" class="text-xs opacity-70 italic font-mono uppercase">Role: -</p>
-            </div>
-            <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-bold">LOGOUT</button>
-        </header>
+    <header class="py-8 text-center relative">
+        <h1 class="text-4xl font-extrabold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent italic uppercase tracking-tighter">Dzuhur 12</h1>
+        <p class="text-[9px] text-cyan-500 mt-2 uppercase tracking-[0.3em] font-black italic">Rohis Sma 12 Jakarta</p>
+        <button id="btn-logout" onclick="prosesLogout()" class="hidden absolute top-4 right-4 bg-red-900/30 text-red-500 border border-red-500/30 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest">Logout</button>
+    </header>
 
-        <div class="bg-slate-800 p-6 rounded-b-2xl border-x border-b border-slate-700">
-            <div id="scan-feature" class="mb-8">
-                <div class="bg-slate-900 p-8 border-2 border-dashed border-slate-700 rounded-xl text-center">
-                    <i class="fas fa-qrcode text-6xl text-blue-500 mb-4"></i>
-                    <h3 class="text-xl font-bold">Wajib Scan QR Code Siswa</h3>
-                    <p class="text-slate-500 text-sm mb-4 italic">Kamera akan aktif otomatis untuk memindai ID</p>
-                    <button onclick="simulasiScan()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full font-bold">AKTIFKAN KAMERA</button>
+    <div class="flex justify-center mb-8 px-4 relative z-[50]">
+        <div class="glass p-1.5 rounded-2xl flex gap-2 w-full max-w-[320px]">
+            <button onclick="switchTab('admin')" id="btn-admin" class="flex-1 py-3.5 rounded-xl font-bold active-tab text-xs transition-all duration-300">🎫 KARTU</button>
+            <button onclick="switchTab('scan')" id="btn-scan" class="flex-1 py-3.5 rounded-xl font-bold text-gray-400 text-xs transition-all duration-300">📷 SCANNER</button>
+        </div>
+    </div>
+
+    <div id="modal-login" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] flex items-center justify-center p-4">
+    <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
+        <h2 class="text-xl font-bold text-white mb-6 italic uppercase tracking-widest">PILIH AKSES LOGIN</h2>
+        
+        <div class="space-y-3">
+            <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-2">
+                <option value="sekretaris">SEKRETARIS KELAS</option>
+                <option value="piket">GURU PIKET</option>
+                <option value="guru">GURU / WALAS</option>
+                <option value="admin">ADMIN SISTEM</option>
+            </select>
+
+            <input type="text" id="login-user" placeholder="Username / Kelas (X-1)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
+            
+            <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
+            
+            <button onclick="prosesLoginMulti()" class="w-full py-4 bg-cyan-600 text-white font-bold rounded-2xl shadow-lg uppercase text-xs mt-4">MASUK</button>
+        </div>
+    </div>
+</div>
+
+
+    <main class="max-w-2xl mx-auto px-4">
+        <section id="tab-admin" class="space-y-6">
+            <div class="glass p-8 rounded-[2.5rem]">
+                <h2 class="text-sm font-black mb-6 text-white uppercase tracking-widest italic">Pendaftaran Murid</h2>
+                <div class="grid gap-4">
+                    <input type="text" id="input-nama" placeholder="Nama Lengkap" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white focus:border-cyan-500">
+                    <div class="flex gap-4">
+                        <select id="select-kelas-admin" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm"></select>
+                        <input type="number" id="input-nis" placeholder="No. Absen" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white">
+                    </div>
+                    <div class="flex gap-4">
+                        <select id="select-jk" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
+                            <option value="L">LAKI-LAKI</option>
+                            <option value="P">PEREMPUAN</option>
+                        </select>
+                        <select id="select-agama" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
+                            <option value="Islam">ISLAM</option>
+                            <option value="Kristen">KRISTEN</option>
+                        </select>
+                    </div>
+                    <button onclick="buatQR()" class="bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest mt-2 active:scale-95 transition-all">Generate & Simpan</button>
+                </div>
+            </div>
+            <div id="qr-result-area" class="flex flex-col items-center"></div>
+
+            <div id="bulk-area-guru" class="hidden glass p-8 rounded-[2.5rem] border border-yellow-500/20">
+                <h2 class="text-sm font-black mb-2 text-yellow-500 uppercase italic">Bulk Daftar Murid</h2>
+                <p class="text-[8px] text-gray-500 mb-4 uppercase font-bold tracking-widest italic">Format: Nama [Spasi] Absen [Spasi] JK (L/P) [Spasi] Agama</p>
+                <textarea id="bulk-input" rows="4" placeholder="ASEP 1 L Islam&#10;SITI 2 P Islam" class="w-full bg-black/40 border border-gray-800 p-5 rounded-2xl text-xs text-white mb-4 outline-none"></textarea>
+                <button onclick="prosesBulkQR()" id="btn-bulk" class="w-full py-4 bg-yellow-600 text-white font-bold rounded-2xl text-[10px] uppercase tracking-widest">🚀 Download ZIP & Simpan</button>
+            </div>
+        </section>
+
+        <section id="tab-scan" class="hidden space-y-6">
+            <div class="glass p-2 rounded-[2rem] flex gap-2">
+                <button onclick="setMode('Islam')" id="mode-islam" class="flex-1 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border border-gray-800 text-gray-500 transition-all active-mode-islam">☪️ Mode Islam</button>
+                <button onclick="setMode('Kristen')" id="mode-kristen" class="flex-1 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border border-gray-800 text-gray-500 transition-all">✝️ Mode Kristen</button>
+            </div>
+
+            <div class="flex gap-3">
+                <button id="btn-start-cam" onclick="startScanner()" class="flex-1 py-5 bg-cyan-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">📷 Aktifkan Kamera</button>
+                <button id="btn-stop-cam" onclick="stopScanner()" class="hidden flex-1 py-5 bg-red-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">🛑 Matikan</button>
+            </div>
+
+            <div class="glass p-5 rounded-[3rem] border-2 border-cyan-500/10 relative min-h-[300px] flex items-center justify-center overflow-hidden">
+                <div id="reader" class="w-full rounded-[2rem]"></div>
+                <div id="scan-feedback" class="absolute inset-0 flex items-center justify-center rounded-[3rem] hidden z-10">
+                    <div id="feedback-content" class="text-center text-white p-10 rounded-[3rem] shadow-2xl">
+                        <div id="check-icons" class="text-6xl mb-3"></div>
+                        <p id="scanned-name" class="text-2xl font-black uppercase tracking-tighter mb-1"></p>
+                        <p id="scanned-info" class="text-[10px] opacity-80 font-bold uppercase"></p>
+                    </div>
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left border-collapse border border-slate-700">
-                    <thead class="bg-slate-700 text-slate-200">
-                        <tr>
-                            <th class="p-3 border border-slate-600">Nama</th>
-                            <th class="p-3 border border-slate-600">Kelas</th>
-                            <th class="p-3 border border-slate-600">Absen</th>
-                            <th class="p-3 border border-slate-600">Status</th>
-                            <th class="p-3 border border-slate-600">Masuk</th>
-                            <th class="p-3 border border-slate-600">TelatMenit</th>
-                            <th class="p-3 border border-slate-600 text-center italic">Event</th>
-                        </tr>
-                    </thead>
-                    <tbody id="data-tabel">
-                        </tbody>
-                </table>
+            <div class="glass p-6 rounded-[2.5rem]">
+                <button onclick="downloadZipLaporan()" id="btn-zip-laporan" class="w-full py-5 bg-green-700 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl">📦 Download Rekap Harian (ZIP)</button>
+                <div id="log-list" class="mt-8 space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
+
+    <div id="hidden-qr-engine" style="position: absolute; left: -9999px; top: 0;"></div>
 
     <script>
-        // Data Dummy Siswa sesuai gambar lo
-        const dataSiswa = [
-            {nama: "GEMA", kelas: "X-1", absen: 1, status: "-", masuk: "-", telat: "-", event: "DISPEN 20:15"},
-            {nama: "RAKA", kelas: "X-1", absen: 2, status: "-", masuk: "-", telat: "-", event: ""},
-            {nama: "SITI", kelas: "X-1", absen: 3, status: "-", masuk: "-", telat: "-", event: ""},
-            {nama: "DANU", kelas: "X-2", absen: 1, status: "-", masuk: "-", telat: "-", event: ""},
-            {nama: "NABILA", kelas: "X-2", absen: 2, status: "-", masuk: "-", telat: "-", event: ""}
-        ];
+        const PW_LIST = {
+    admin: "admin123",
+    piket: "piket12",
+    // Password Sekretaris per Kelas
+    sekretaris: {
+        "X-1": "bintangX1",
+        "X-2": "bintangX2",
+        "X-3": "bintangX3",
+        "XI-1": "bintangXI1"
+    },
+    // Password Guru/Walas
+    guru: {
+        "pak-yahya": "yahya123",
+        "bu-siti": "siti456"
+    }
+}; 
+        const GITHUB_TOKEN = ""; 
+        const GIST_ID_UTAMA = "8f37fc18c4d3593486f97919ca9f"; 
+        const DAFTAR_KELAS = ["X-1", "X-2", "X-3", "X-4", "X-5", "X-6", "XI-1", "XI-2", "XI-3", "XI-4", "XI-5", "XI-6", "XII-1", "XII-2", "XII-3", "XII-4", "XII-5", "XII-6"];
+        
+        let isGuruLoggedIn = false;
+        let localDB = {}; 
+        let currentMode = 'Islam';
+        let html5QrScanner;
 
-        function prosesLogin() {
-            const usn = document.getElementById('username').value;
-            const pw = document.getElementById('password').value;
-            
-            // Logika Login yang lo mau
-            let role = "";
-            if (usn.includes('X-') && pw === "bintang") {
-                role = "sekretaris";
-            } else if ((usn === "nama guru" && (pw === "terserahkamu123" || pw === "974252"))) {
-                role = "guru";
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-                return;
-            }
-
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('display-user').innerText = "User: " + usn;
-            document.getElementById('display-role').innerText = "Role: " + role;
-
-            renderTabel(role, usn);
+        async function init() {
+            if(localStorage.getItem('guruLogin') === 'true') { isGuruLoggedIn = true; updateUIAfterLogin(); }
+            const adminSelect = document.getElementById('select-kelas-admin');
+            DAFTAR_KELAS.forEach(cls => { adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`; });
+            await loadAllData();
+            document.getElementById('loading-overlay').classList.add('hidden');
         }
 
-        function renderTabel(role, filter) {
-            const container = document.getElementById('data-tabel');
-            container.innerHTML = "";
-            
-            // Sekretaris cuma liat kelasnya, Guru liat semua
-            const filteredData = role === "sekretaris" ? dataSiswa.filter(s => s.kelas === filter) : dataSiswa;
+        async function loadAllData() {
+            try {
+                const res = await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}?t=${new Date().getTime()}`);
+                const data = await res.json();
+                DAFTAR_KELAS.forEach(cls => {
+                    const fileName = `${cls}.json`;
+                    localDB[cls] = data.files[fileName] ? JSON.parse(data.files[fileName].content) : [];
+                });
+                renderLog();
+            } catch (e) { console.error("Database Down!"); }
+        }
 
-            filteredData.forEach(s => {
-                container.innerHTML += `
-                    <tr class="hover:bg-slate-750 transition border-b border-slate-700">
-                        <td class="p-3 border border-slate-700">${s.nama}</td>
-                        <td class="p-3 border border-slate-700 font-mono">${s.kelas}</td>
-                        <td class="p-3 border border-slate-700 text-center">${s.absen}</td>
-                        <td class="p-3 border border-slate-700 text-center">${s.status}</td>
-                        <td class="p-3 border border-slate-700">${s.masuk}</td>
-                        <td class="p-3 border border-slate-700 text-center">${s.telat}</td>
-                        <td class="p-3 border border-slate-700 text-orange-400 italic">${s.event}</td>
-                    </tr>
-                `;
+        async function syncToGithub(kelas) {
+            const fileName = `${kelas}.json`;
+            await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}`, {
+                method: "PATCH",
+                headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ files: { [fileName]: { content: JSON.stringify(localDB[kelas], null, 2) } } })
             });
-
-            // Guru gak butuh fitur scan di halamannya
-            if (role === "guru") document.getElementById('scan-feature').classList.add('hidden');
         }
 
-        function simulasiScan() {
-            alert("Membuka Kamera... Siapkan QR Code Siswa!\nJika cocok, Status akan berubah jadi 'HADIR' dan WA Orang Tua terkirim otomatis.");
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-islam').classList.toggle('active-mode-islam', mode === 'Islam');
+            document.getElementById('mode-kristen').classList.toggle('active-mode-kristen', mode === 'Kristen');
         }
+
+        async function buatQR() {
+            const n = document.getElementById('input-nama').value.trim();
+            const k = document.getElementById('select-kelas-admin').value;
+            const a = document.getElementById('input-nis').value.trim();
+            const ag = document.getElementById('select-agama').value;
+            const jk = document.getElementById('select-jk').value;
+            if(!n || !a) return alert("Isi data!");
+            if (localDB[k].some(d => d.Absen === a)) return alert("Absen kedaftar!");
+            
+            localDB[k].push({ Nama: n, Kelas: k, Absen: a, JK: jk, Agama: ag, Jam: "-", Tanggal: "-", Status: "-", KehadiranKe: 0 });
+            await syncToGithub(k);
+            
+            const area = document.getElementById('qr-result-area');
+            area.innerHTML = `<div id="qrd" class="p-8 bg-white rounded-[2.5rem] flex flex-col items-center mt-6">
+                <div id="qri" class="mb-4"></div><b class="text-black uppercase text-xl">${n}</b><p class="text-gray-500 font-bold uppercase text-[9px]">${k} • ${jk} • ${ag} • ABSEN ${a}</p>
+            </div><button onclick="downloadQR('${n}')" class="mt-4 bg-cyan-600 p-4 w-full max-w-[280px] rounded-2xl font-black italic text-white text-xs uppercase">💾 Simpan Kartu</button>`;
+            new QRCode(document.getElementById("qri"), { text: `${n}|${k}|${a}|${jk}|${ag}`, width: 200, height: 200, correctLevel : QRCode.CorrectLevel.H });
+        }
+
+        async function prosesAbsen(text) {
+            const [nama, kelas, absen, jk, agama] = text.split('|');
+            const now = new Date();
+            const today = now.toLocaleDateString('id-ID');
+            
+            if (agama !== currentMode) return showFeedback("❌", nama, `SALAH PINTU! KHUSUS ${currentMode.toUpperCase()}`, "bg-red-700");
+            if (localDB[kelas].some(d => d.Absen === absen && d.Tanggal === today)) return showFeedback("⚠️", nama, "SUDAH SCAN HARI INI!", "bg-yellow-600");
+
+            let idx = localDB[kelas].findIndex(d => d.Absen === absen);
+            if (idx !== -1) {
+                const tipeStatus = currentMode === 'Islam' ? 'DZUHUR' : 'IBADAH';
+                localDB[kelas][idx].Jam = now.toLocaleTimeString('id-ID');
+                localDB[kelas][idx].Tanggal = today;
+                localDB[kelas][idx].Status = tipeStatus;
+                localDB[kelas][idx].KehadiranKe = (parseInt(localDB[kelas][idx].KehadiranKe) || 0) + 1;
+                
+                showFeedback("✅", nama, `${tipeStatus} BERHASIL`, "bg-green-600");
+                renderLog();
+                await syncToGithub(kelas);
+            }
+        }
+
+        async function downloadZipLaporan() {
+            const btn = document.getElementById('btn-zip-laporan');
+            btn.innerText = "⏳ PROCESSING..."; btn.disabled = true;
+            const zip = new JSZip();
+            const today = new Date().toLocaleDateString('id-ID');
+            for (const cls of DAFTAR_KELAS) {
+                if (localDB[cls].length > 0) {
+                    let sorted = [...localDB[cls]].sort((a,b) => parseInt(a.Absen)-parseInt(b.Absen));
+                    const dataExcel = sorted.map(s => {
+                        const isHadir = s.Tanggal === today;
+                        return {
+                            "ABSEN": s.Absen, "NAMA": s.Nama.toUpperCase(), "JK": s.JK || "-", "AGAMA": s.Agama || "Islam",
+                            "STATUS": isHadir ? `✓ ${s.Status}` : "X ALFA",
+                            "JAM": isHadir ? s.Jam : "-", "TOTAL": s.KehadiranKe || 0
+                        };
+                    });
+                    const ws = XLSX.utils.json_to_sheet(dataExcel);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "REKAP");
+                    zip.file(`REKAP_${cls}_${today.replace(/\//g, '-')}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
+                }
+            }
+            const content = await zip.generateAsync({type:"blob"});
+            const l = document.createElement('a'); l.href = URL.createObjectURL(content);
+            l.download = `ABSEN_SMA12_${today.replace(/\//g, '-')}.zip`; l.click();
+            btn.innerText = "📦 Download Rekap Harian (ZIP)"; btn.disabled = false;
+        }
+
+        function renderLog() {
+            const list = document.getElementById('log-list');
+            const today = new Date().toLocaleDateString('id-ID');
+            let allLogs = [];
+            DAFTAR_KELAS.forEach(cls => { localDB[cls].filter(d => d.Tanggal === today).forEach(d => allLogs.push(d)); });
+            allLogs.sort((a,b) => b.Jam.localeCompare(a.Jam));
+            list.innerHTML = allLogs.length === 0 ? `<p class="text-center text-gray-600 py-10 italic text-[10px] uppercase">Belum ada scan masuk...</p>` :
+                allLogs.slice(0, 30).map(d => `<div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500 mb-2">
+                    <div><b class="text-white text-xs uppercase">${d.Nama}</b><div class="text-[8px] text-gray-500">${d.JK} • ${d.Agama} • ${d.Status} • ${d.Jam}</div></div>
+                    <div class="bg-gray-900 px-3 py-1 rounded-lg text-cyan-400 font-black text-[10px]">#${d.KehadiranKe}</div></div>`).join('');
+        }
+
+        async function prosesBulkQR() {
+            const input = document.getElementById('bulk-input').value.trim();
+            const k = document.getElementById('select-kelas-admin').value;
+            if(!input) return;
+            const zip = new JSZip();
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            const lines = input.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                const p = lines[i].trim().split(' ');
+                const agama = p.pop(); const jk = p.pop(); const absen = p.pop(); const nama = p.join(' ');
+                if(!nama || isNaN(absen)) continue;
+                if (!localDB[k].some(d => d.Absen === absen)) {
+                    localDB[k].push({ Nama: nama, Kelas: k, Absen: absen, JK: jk, Agama: agama, Jam: "-", Tanggal: "-", Status: "-", KehadiranKe: 0 });
+                }
+                const engine = document.getElementById('hidden-qr-engine');
+                engine.innerHTML = `<div id="tmp-card" style="padding:40px; background:white; width:350px; text-align:center;"><div id="tmp-img" style="display:flex; justify-content:center;"></div><div style="margin-top:20px;"><b style="color:black; font-size:24px; text-transform:uppercase;">${nama}</b><p style="color:#666; font-weight:bold; font-size:12px;">${k} - ${jk} - ${agama} - ABSEN ${absen}</p></div></div>`;
+                new QRCode(document.getElementById("tmp-img"), { text: `${nama}|${k}|${absen}|${jk}|${agama}`, width: 250, height: 250 });
+                await new Promise(r => setTimeout(r, 200));
+                const canvas = await html2canvas(document.getElementById('tmp-card'), {scale: 2});
+                zip.file(`${k}/QR_${absen}_${nama}.png`, canvas.toDataURL("image/png").split(',')[1], {base64: true});
+            }
+            await syncToGithub(k);
+            const content = await zip.generateAsync({type:"blob"});
+            const l = document.createElement('a'); l.href = URL.createObjectURL(content); l.download = `QR_BULK_${k}.zip`; l.click();
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // UI HELPERS
+        function switchTab(t) { if (t === 'scan' && !isGuruLoggedIn) { document.getElementById('modal-login').classList.remove('hidden'); document.getElementById('modal-login').classList.add('flex'); return; } document.getElementById('tab-admin').classList.toggle('hidden', t !== 'admin'); document.getElementById('tab-scan').classList.toggle('hidden', t !== 'scan'); document.getElementById('btn-admin').classList.toggle('active-tab', t === 'admin'); document.getElementById('btn-scan').classList.toggle('active-tab', t === 'scan'); if(t !== 'scan') stopScanner(); }
+        function prosesLoginMulti() {
+    const role = document.getElementById('login-role').value;
+    const user = document.getElementById('login-user').value.toUpperCase(); // Biar input x-1 jadi X-1
+    const pass = document.getElementById('login-pass').value;
+
+    let loginSukses = false;
+
+    if (role === 'admin' && pass === PW_LIST.admin) {
+        loginSukses = true;
+        currentRole = 'ADMIN';
+    } 
+    else if (role === 'piket' && pass === PW_LIST.piket) {
+        loginSukses = true;
+        currentRole = 'PIKET';
+    }
+    else if (role === 'sekretaris') {
+        if (PW_LIST.sekretaris[user] && pass === PW_LIST.sekretaris[user]) {
+            loginSukses = true;
+            currentRole = 'SEKRETARIS';
+            currentKelas = user; // Biar dia cuma bisa absen kelasnya sendiri
+        }
+    }
+    else if (role === 'guru') {
+        if (PW_LIST.guru[user.toLowerCase()] && pass === PW_LIST.guru[user.toLowerCase()]) {
+            loginSukses = true;
+            currentRole = 'GURU';
+        }
+    }
+
+    if (loginSukses) {
+        isGuruLoggedIn = true; // Flag global dari base kode lo
+        localStorage.setItem('role', currentRole);
+        tutupLogin();
+        alert(`Selamat Datang ${currentRole} ${user || ''}`);
+        // Panggil fungsi buat nampilin fitur sesuai role
+        aturFiturBerdasarkanRole(); 
+    } else {
+        alert("Akses Ditolak! Cek Username/Kelas & Password.");
+    }
+}     
+        function tutupLogin() { document.getElementById('modal-login').classList.add('hidden'); document.getElementById('modal-login').classList.remove('flex'); }
+        function updateUIAfterLogin() { document.getElementById('bulk-area-guru').classList.remove('hidden'); document.getElementById('btn-logout').classList.remove('hidden'); }
+        function prosesLogout() { isGuruLoggedIn = false; localStorage.removeItem('guruLogin'); window.location.reload(); }
+        function downloadQR(n) { html2canvas(document.getElementById('qrd'), {scale: 3}).then(c => { let l=document.createElement('a'); l.href=c.toDataURL(); l.download=`QR_${n}.png`; l.click(); }); }
+        
+        function startScanner() {
+            document.getElementById('btn-start-cam').classList.add('hidden');
+            document.getElementById('btn-stop-cam').classList.remove('hidden');
+            if (html5QrScanner) { html5QrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => prosesAbsen(text));
+            } else { html5QrScanner = new Html5Qrcode("reader"); startScanner(); }
+        }
+        async function stopScanner() { if (html5QrScanner && html5QrScanner.isScanning) await html5QrScanner.stop(); document.getElementById('btn-start-cam').classList.remove('hidden'); document.getElementById('btn-stop-cam').classList.add('hidden'); }
+
+        function showFeedback(i, n, f, b) {
+            const fb = document.getElementById('scan-feedback');
+            document.getElementById('check-icons').innerText = i;
+            document.getElementById('scanned-name').innerText = n;
+            document.getElementById('scanned-info').innerText = f;
+            document.getElementById('feedback-content').className = `text-center text-white p-10 rounded-[3rem] shadow-2xl ${b} border border-white/20`;
+            fb.classList.remove('hidden');
+            setTimeout(() => fb.classList.add('hidden'), 2000);
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
-
