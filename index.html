@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Attendance (MVP) - Multi Role</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#0b1220; color:#e5e7eb; }
+    .glass { background: rgba(17, 24, 39, .72); border: 1px solid rgba(148, 163, 184, .18); backdrop-filter: blur(12px); }
+    .btn { @apply px-4 py-2 rounded-xl font-semibold text-sm transition active:scale-95; }
+    .chip { @apply text-[11px] px-2.5 py-1 rounded-full font-bold tracking-wide; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-5">
+      <div>
+        <div class="text-xs text-sky-400 font-black tracking-[0.35em] uppercase">MVP • Multi-Role</div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          Smart Gate Attendance <span class="text-slate-400">— Demo</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">1 file HTML • LocalStorage DB • No backend (buat tes konsep)</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div id="badgeUser" class="hidden glass px-3 py-2 rounded-2xl text-xs"></div>
+        <button id="btnLogout" class="hidden btn bg-rose-600 hover:bg-rose-500">Logout</button>
+      </div>
+    </header>
+
+    <!-- Login -->
+    <section id="viewLogin" class="glass rounded-3xl p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row gap-6 sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-xl font-bold">Login Role</h2>
+          <p class="text-sm text-slate-400 mt-1">Pilih role untuk simulasi akses.</p>
+          <p class="text-xs text-slate-500 mt-3 mono">
+            Demo akun:
+            sekretaris / 1234 • piket / 1234 • walas / 1234 • admin / 1234
+          </p>
+        </div>
+        <div class="w-full sm:w-[360px]">
+          <label class="text-xs text-slate-400">Username</label>
+          <input id="loginUser" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"
+                 placeholder="sekretaris / piket / walas / admin"/>
+          <label class="text-xs text-slate-400 mt-3 block">Password</label>
+          <input id="loginPass" type="password" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"
+                 placeholder="1234"/>
+          <button id="btnLogin" class="mt-4 w-full btn bg-sky-600 hover:bg-sky-500">Masuk</button>
+        </div>
+      </div>
+
+      <div class="mt-7 grid md:grid-cols-2 gap-4">
+        <div class="glass rounded-3xl p-5">
+          <h3 class="font-bold">Apa yang bisa dites di demo ini ✅</h3>
+          <ul class="mt-3 text-sm text-slate-300 space-y-2 list-disc pl-5">
+            <li>Scan QR (simulasi input teks) → status HADIR/TERLAMBAT</li>
+            <li>Auto-ALPA lewat tombol “Run Cutoff” (simulasi scheduler)</li>
+            <li>Set IZIN/SAKIT oleh Sekretaris/Walas</li>
+            <li>Dispen keluar/balik & pulang cepat/sakit oleh Piket</li>
+            <li>Rekap Harian & export CSV (simple)</li>
+          </ul>
+        </div>
+        <div class="glass rounded-3xl p-5">
+          <h3 class="font-bold">Catatan penting 🔐</h3>
+          <p class="mt-3 text-sm text-slate-300">
+            Ini cuma demo konsep. Di produksi, semua aturan & pengiriman WhatsApp harus via backend + database beneran.
+          </p>
+          <div class="mt-4 text-xs text-slate-500">
+            Tip: kalau mau reset data demo, klik tombol <b>Reset Demo</b> di Admin.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Shell -->
+    <section id="viewApp" class="hidden">
+      <!-- Tabs -->
+      <div class="glass rounded-2xl p-2 flex flex-wrap gap-2 mb-5">
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="dashboard">🏠 Dashboard</button>
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="scan">📷 Scan (Sekretaris)</button>
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="izin">📝 Izin/Sakit</button>
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="piket">🚪 Panel Piket</button>
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="rekap">📊 Rekap</button>
+        <button class="tab btn bg-slate-800 hover:bg-slate-700" data-tab="admin">⚙️ Admin</button>
+      </div>
+
+      <!-- Dashboard -->
+      <section id="tab-dashboard" class="tabview glass rounded-3xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold">Dashboard</h2>
+            <p id="todayLabel" class="text-sm text-slate-400 mt-1"></p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button id="btnRunCutoff" class="btn bg-amber-600 hover:bg-amber-500">⏱ Run Cutoff (Auto-ALPA)</button>
+            <button id="btnSeed" class="btn bg-emerald-600 hover:bg-emerald-500">➕ Seed Data Siswa</button>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-6">
+          <div class="glass rounded-3xl p-4">
+            <div class="text-xs text-slate-400">HADIR</div>
+            <div id="statHadir" class="text-2xl font-extrabold mt-1">0</div>
+          </div>
+          <div class="glass rounded-3xl p-4">
+            <div class="text-xs text-slate-400">TERLAMBAT</div>
+            <div id="statTelat" class="text-2xl font-extrabold mt-1">0</div>
+          </div>
+          <div class="glass rounded-3xl p-4">
+            <div class="text-xs text-slate-400">IZIN</div>
+            <div id="statIzin" class="text-2xl font-extrabold mt-1">0</div>
+          </div>
+          <div class="glass rounded-3xl p-4">
+            <div class="text-xs text-slate-400">SAKIT</div>
+            <div id="statSakit" class="text-2xl font-extrabold mt-1">0</div>
+          </div>
+          <div class="glass rounded-3xl p-4">
+            <div class="text-xs text-slate-400">ALPA</div>
+            <div id="statAlpa" class="text-2xl font-extrabold mt-1">0</div>
+          </div>
+        </div>
+
+        <div class="mt-6 glass rounded-3xl p-5">
+          <h3 class="font-bold mb-2">Log Aktivitas Terakhir</h3>
+          <div id="logArea" class="space-y-2 max-h-[320px] overflow-auto pr-2"></div>
+        </div>
+      </section>
+
+      <!-- Scan (Sekretaris) -->
+      <section id="tab-scan" class="tabview hidden glass rounded-3xl p-6">
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 class="text-xl font-bold">Scan QR (Sekretaris)</h2>
+            <p class="text-sm text-slate-400 mt-1">Demo: tempel “QR payload” (mis. <span class="mono">STU-001</span>) lalu proses.</p>
+          </div>
+          <div class="glass rounded-2xl px-4 py-2 text-xs text-slate-300">
+            Jam Mulai: <b id="cfgStart"></b> • Batas Telat: <b id="cfgLate"></b>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 mt-6">
+          <div class="glass rounded-3xl p-5">
+            <label class="text-xs text-slate-400">QR Payload (simulasi)</label>
+            <input id="scanInput" class="mt-2 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"
+                   placeholder="Contoh: STU-001"/>
+            <button id="btnScan" class="mt-3 w-full btn bg-sky-600 hover:bg-sky-500">✅ Proses Scan</button>
+
+            <div id="scanFeedback" class="hidden mt-4 rounded-3xl p-5 border"></div>
+
+            <div class="mt-5 text-xs text-slate-500">
+              Tips: Kamu bisa edit jam “sekarang” dengan fitur browser devtools? 😄
+              Untuk demo, scan akan pakai jam real device.
+            </div>
+          </div>
+
+          <div class="glass rounded-3xl p-5">
+            <h3 class="font-bold mb-2">Daftar Siswa (Kelas Demo: X-1)</h3>
+            <div id="studentList" class="divide-y divide-slate-800"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Izin/Sakit -->
+      <section id="tab-izin" class="tabview hidden glass rounded-3xl p-6">
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 class="text-xl font-bold">Set Izin / Sakit</h2>
+            <p class="text-sm text-slate-400 mt-1">Dipakai walas/sekretaris berdasarkan info grup WA.</p>
+          </div>
+          <div class="text-xs text-slate-500">
+            Rule: jika sudah IZIN/SAKIT → tidak akan kena ALPA saat cutoff.
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 mt-6">
+          <div class="glass rounded-3xl p-5">
+            <label class="text-xs text-slate-400">Cari siswa (nama / absen / ID)</label>
+            <input id="izinSearch" class="mt-2 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"
+                   placeholder="Contoh: Gema / 1 / STU-001"/>
+            <div id="izinSearchRes" class="mt-3 space-y-2"></div>
+          </div>
+
+          <div class="glass rounded-3xl p-5">
+            <h3 class="font-bold mb-3">Aksi Cepat</h3>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <button id="btnSetIzin" class="btn bg-emerald-600 hover:bg-emerald-500">📝 SET IZIN</button>
+              <button id="btnSetSakit" class="btn bg-indigo-600 hover:bg-indigo-500">🤒 SET SAKIT</button>
+              <button id="btnClearStatus" class="btn bg-slate-700 hover:bg-slate-600">↩️ Batalkan Status (Admin/Walas)</button>
+              <button id="btnNote" class="btn bg-slate-800 hover:bg-slate-700">🗒️ Tambah Catatan</button>
+            </div>
+
+            <div class="mt-4 glass rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Siswa terpilih</div>
+              <div id="izinSelected" class="mt-1 font-bold text-slate-200">—</div>
+              <div id="izinSelectedInfo" class="mt-1 text-xs text-slate-400">—</div>
+              <textarea id="izinNote" class="mt-3 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500 text-sm"
+                        rows="3" placeholder="Catatan (opsional): contoh ‘Ortu chat di grup walas’"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel Piket -->
+      <section id="tab-piket" class="tabview hidden glass rounded-3xl p-6">
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 class="text-xl font-bold">Panel Piket (Keluar Masuk)</h2>
+            <p class="text-sm text-slate-400 mt-1">Dispen keluar/balik, pulang cepat/sakit.</p>
+          </div>
+          <div class="text-xs text-slate-500">
+            Konsep: DISPEN = pause/resume.
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 mt-6">
+          <div class="glass rounded-3xl p-5">
+            <label class="text-xs text-slate-400">Cari siswa</label>
+            <input id="piketSearch" class="mt-2 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"
+                   placeholder="Contoh: Gema / STU-001"/>
+            <div id="piketSearchRes" class="mt-3 space-y-2"></div>
+
+            <div class="mt-4 grid sm:grid-cols-2 gap-3">
+              <button id="btnDispenOut" class="btn bg-sky-700 hover:bg-sky-600">🚶 DISPEN KELUAR</button>
+              <button id="btnDispenBack" class="btn bg-sky-500 hover:bg-sky-400">🏫 DISPEN BALIK</button>
+              <button id="btnPulangSakit" class="btn bg-rose-600 hover:bg-rose-500">🤒 PULANG SAKIT</button>
+              <button id="btnPulangCepat" class="btn bg-amber-600 hover:bg-amber-500">🕒 PULANG CEPAT</button>
+            </div>
+
+            <div class="mt-4 glass rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Siswa terpilih</div>
+              <div id="piketSelected" class="mt-1 font-bold text-slate-200">—</div>
+              <textarea id="piketReason" class="mt-3 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500 text-sm"
+                        rows="3" placeholder="Alasan (opsional): lomba / urusan / dll"></textarea>
+              <label class="flex items-center gap-2 mt-3 text-sm text-slate-300">
+                <input id="mustReturn" type="checkbox" class="scale-110">
+                Wajib kembali (khusus dispen)
+              </label>
+            </div>
+          </div>
+
+          <div class="glass rounded-3xl p-5">
+            <h3 class="font-bold mb-2">Sedang Dispen (Belum Balik)</h3>
+            <div id="outList" class="space-y-2"></div>
+            <div class="mt-4 text-xs text-slate-500">
+              Sistem produksi: yang belum balik sampai jam pulang → otomatis “TIDAK KEMBALI”.
+              Di demo ini, kamu bisa pakai “Run End Of Day” dari Admin.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rekap -->
+      <section id="tab-rekap" class="tabview hidden glass rounded-3xl p-6">
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 class="text-xl font-bold">Rekap</h2>
+            <p class="text-sm text-slate-400 mt-1">Harian / Export CSV (demo).</p>
+          </div>
+          <div class="flex gap-2">
+            <button id="btnExport" class="btn bg-emerald-600 hover:bg-emerald-500">⬇️ Export CSV</button>
+            <button id="btnRefreshRekap" class="btn bg-slate-700 hover:bg-slate-600">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="mt-5 glass rounded-3xl p-4 overflow-auto">
+          <table class="w-full text-sm">
+            <thead class="text-slate-300">
+              <tr class="border-b border-slate-800">
+                <th class="text-left p-3">Nama</th>
+                <th class="text-left p-3">Kelas</th>
+                <th class="text-left p-3">Status</th>
+                <th class="text-left p-3">Masuk</th>
+                <th class="text-left p-3">Telat (m)</th>
+                <th class="text-left p-3">Event</th>
+              </tr>
+            </thead>
+            <tbody id="rekapBody" class="text-slate-200"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Admin -->
+      <section id="tab-admin" class="tabview hidden glass rounded-3xl p-6">
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 class="text-xl font-bold">Admin Settings</h2>
+            <p class="text-sm text-slate-400 mt-1">Atur jam & reset demo.</p>
+          </div>
+          <div class="flex gap-2">
+            <button id="btnReset" class="btn bg-rose-600 hover:bg-rose-500">🧨 Reset Demo</button>
+            <button id="btnEOD" class="btn bg-indigo-600 hover:bg-indigo-500">🌙 Run End Of Day</button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 mt-6">
+          <div class="glass rounded-3xl p-5">
+            <h3 class="font-bold">Konfigurasi Jam</h3>
+            <div class="grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label class="text-xs text-slate-400">Jam mulai</label>
+                <input id="setStart" type="time" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"/>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Batas telat</label>
+                <input id="setLate" type="time" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"/>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Cutoff ALPA</label>
+                <input id="setCutoff" type="time" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"/>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Jam pulang (EOD)</label>
+                <input id="setEod" type="time" class="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-2xl px-4 py-3 outline-none focus:border-sky-500"/>
+              </div>
+            </div>
+            <button id="btnSaveCfg" class="mt-4 w-full btn bg-sky-600 hover:bg-sky-500">💾 Simpan</button>
+            <p class="text-xs text-slate-500 mt-3">Catatan: Cutoff/EOD di demo dieksekusi manual via tombol.</p>
+          </div>
+
+          <div class="glass rounded-3xl p-5">
+            <h3 class="font-bold">Pengaturan Notifikasi WA (demo)</h3>
+            <p class="text-sm text-slate-400 mt-2">
+              Di demo ini belum beneran kirim WA. Tapi kamu bisa lihat “draft pesan” muncul di log.
+            </p>
+            <div class="mt-4 space-y-2 text-sm text-slate-300">
+              <label class="flex items-center gap-2">
+                <input id="waHadir" type="checkbox" class="scale-110"> Kirim WA saat HADIR/TERLAMBAT
+              </label>
+              <label class="flex items-center gap-2">
+                <input id="waAlpa" type="checkbox" class="scale-110"> Kirim WA saat ALPA (cutoff)
+              </label>
+              <label class="flex items-center gap-2">
+                <input id="waEvent" type="checkbox" class="scale-110"> Kirim WA saat event (dispen/pulang)
+              </label>
+              <button id="btnSaveWA" class="mt-3 w-full btn bg-emerald-600 hover:bg-emerald-500">💾 Simpan WA Toggle</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+<script>
+/* =========================
+   SIMPLE MVP DB (LocalStorage)
+   ========================= */
+
+const LS = {
+  cfg: "mvp_cfg_v1",
+  user: "mvp_user_v1",
+  students: "mvp_students_v1",
+  attendance: "mvp_attendance_v1", // keyed by date -> { studentId: {primary, checkin, lateMin, note} }
+  events: "mvp_events_v1",         // keyed by date -> array of events
+  logs: "mvp_logs_v1",
+  wa: "mvp_wa_v1"
+};
+
+const DEFAULT_CFG = {
+  startTime: "07:00",
+  lateDeadline: "07:15",
+  alfaCutoff: "08:30",
+  endOfDay: "14:00"
+};
+
+const DEFAULT_WA = {
+  sendOnScan: true,
+  sendOnAlfa: true,
+  sendOnEvent: true
+};
+
+const USERS = {
+  sekretaris: { pass:"1234", role:"SEKRETARIS", scope:"X-1" },
+  piket:      { pass:"1234", role:"PIKET", scope:"ALL" },
+  walas:      { pass:"1234", role:"WALAS", scope:"X-1" },
+  admin:      { pass:"1234", role:"ADMIN", scope:"ALL" },
+};
+
+// Helpers
+const $ = (id) => document.getElementById(id);
+
+function todayISO() {
+  const d = new Date();
+  const z = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return z.toISOString().slice(0,10); // YYYY-MM-DD
+}
+function nowHHMM() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  return `${hh}:${mm}`;
+}
+function parseTimeToMin(t) {
+  const [h,m] = t.split(":").map(Number);
+  return h*60+m;
+}
+function fmtDateId(dIso){
+  // simple Indonesian-ish
+  const [y,m,dd] = dIso.split("-");
+  return `${dd}/${m}/${y}`;
+}
+
+function load(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+function log(action, detail="") {
+  const logs = load(LS.logs, []);
+  logs.unshift({ ts: new Date().toISOString(), action, detail });
+  save(LS.logs, logs.slice(0, 80));
+  renderLogs();
+}
+
+function getCfg() { return load(LS.cfg, DEFAULT_CFG); }
+function setCfg(cfg) { save(LS.cfg, cfg); }
+
+function getWA() { return load(LS.wa, DEFAULT_WA); }
+function setWA(wa) { save(LS.wa, wa); }
+
+function getStudents() { return load(LS.students, []); }
+function setStudents(arr) { save(LS.students, arr); }
+
+function getAttAll() { return load(LS.attendance, {}); }
+function setAttAll(obj) { save(LS.attendance, obj); }
+function getEventsAll() { return load(LS.events, {}); }
+function setEventsAll(obj) { save(LS.events, obj); }
+
+function getDayAtt(dateIso) {
+  const all = getAttAll();
+  return all[dateIso] || {};
+}
+function setDayAtt(dateIso, dayObj) {
+  const all = getAttAll();
+  all[dateIso] = dayObj;
+  setAttAll(all);
+}
+function getDayEvents(dateIso){
+  const all = getEventsAll();
+  return all[dateIso] || [];
+}
+function setDayEvents(dateIso, arr){
+  const all = getEventsAll();
+  all[dateIso] = arr;
+  setEventsAll(all);
+}
+
+function currentUser() { return load(LS.user, null); }
+function setUser(u) { save(LS.user, u); }
+
+/* =========================
+   AUTH & UI
+   ========================= */
+function show(viewId) {
+  $("viewLogin").classList.toggle("hidden", viewId !== "login");
+  $("viewApp").classList.toggle("hidden", viewId !== "app");
+}
+
+function setActiveTab(tab) {
+  document.querySelectorAll(".tabview").forEach(v => v.classList.add("hidden"));
+  $("tab-"+tab).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(b => {
+    const isActive = b.dataset.tab === tab;
+    b.classList.toggle("bg-sky-700", isActive);
+    b.classList.toggle("hover:bg-sky-600", isActive);
+    b.classList.toggle("bg-slate-800", !isActive);
+    b.classList.toggle("hover:bg-slate-700", !isActive);
+  });
+}
+
+function applyRoleAccess() {
+  const u = currentUser();
+  // Default hide everything first then reveal allowed
+  const tabs = {
+    dashboard: true,
+    scan: false,
+    izin: false,
+    piket: false,
+    rekap: true,
+    admin: false
+  };
+
+  if (!u) return tabs;
+
+  if (u.role === "SEKRETARIS") { tabs.scan = true; tabs.izin = true; tabs.piket = false; }
+  if (u.role === "WALAS")      { tabs.scan = false; tabs.izin = true; tabs.piket = false; }
+  if (u.role === "PIKET")      { tabs.scan = false; tabs.izin = false; tabs.piket = true; }
+  if (u.role === "ADMIN")      { tabs.scan = true; tabs.izin = true; tabs.piket = true; tabs.admin = true; }
+
+  document.querySelectorAll(".tab").forEach(b => {
+    const t = b.dataset.tab;
+    b.classList.toggle("hidden", !tabs[t]);
+  });
+
+  // Default landing tab
+  setActiveTab("dashboard");
+  if (u.role === "SEKRETARIS") setActiveTab("scan");
+  if (u.role === "PIKET") setActiveTab("piket");
+  if (u.role === "WALAS") setActiveTab("rekap");
+  if (u.role === "ADMIN") setActiveTab("dashboard");
+}
+
+/* =========================
+   SEED DATA
+   ========================= */
+function seedStudents() {
+  const s = getStudents();
+  if (s.length) { log("Seed skipped", "Data siswa sudah ada."); return; }
+  setStudents([
+    { id:"STU-001", name:"GEMA", className:"X-1", absen:"1", parentPhone:"62812xxxxxxx" },
+    { id:"STU-002", name:"RAKA", className:"X-1", absen:"2", parentPhone:"62813xxxxxxx" },
+    { id:"STU-003", name:"SITI", className:"X-1", absen:"3", parentPhone:"62814xxxxxxx" },
+    { id:"STU-004", name:"ASEP", className:"X-1", absen:"4", parentPhone:"62815xxxxxxx" },
+    { id:"STU-005", name:"NABILA", className:"X-1", absen:"5", parentPhone:"62816xxxxxxx" },
+  ]);
+  log("Seed data siswa", "5 siswa demo ditambahkan (X-1).");
+  renderStudents();
+  refreshAll();
+}
+
+/* =========================
+   CORE BUSINESS LOGIC
+   ========================= */
+function ensureDailyRow(dateIso, studentId) {
+  const day = getDayAtt(dateIso);
+  if (!day[studentId]) {
+    day[studentId] = { primary:"-", checkin:"-", lateMin:"-", note:"" };
+    setDayAtt(dateIso, day);
+  }
+  return day;
+}
+
+function canAccessStudent(u, student) {
+  if (!u) return false;
+  if (u.scope === "ALL") return true;
+  return student.className === u.scope;
+}
+
+function findStudentByPayload(payload) {
+  const students = getStudents();
+  return students.find(x => x.id === payload.trim());
+}
+
+function doScan(payload) {
+  const u = currentUser();
+  const cfg = getCfg();
+  const wa = getWA();
+
+  const st = findStudentByPayload(payload);
+  if (!st) return { ok:false, msg:"QR tidak dikenal. Coba STU-001 dst.", tone:"danger" };
+  if (!canAccessStudent(u, st)) return { ok:false, msg:"Akses ditolak: beda scope kelas.", tone:"danger" };
+
+  const dateIso = todayISO();
+  const day = ensureDailyRow(dateIso, st.id);
+  const row = day[st.id];
+
+  // If already IZIN/SAKIT/ALPA, block scan unless admin
+  if (["IZIN","SAKIT","ALPA"].includes(row.primary) && u.role !== "ADMIN") {
+    return { ok:false, msg:`Status sudah ${row.primary}. Hubungi walas/admin jika perlu ubah.`, tone:"warn" };
+  }
+  // If already scanned today
+  if (row.checkin !== "-" && row.checkin !== undefined) {
+    return { ok:false, msg:`Sudah scan hari ini (${row.checkin}).`, tone:"warn" };
+  }
+
+  const now = nowHHMM();
+  const nowMin = parseTimeToMin(now);
+  const startMin = parseTimeToMin(cfg.startTime);
+  const lateMin = parseTimeToMin(cfg.lateDeadline);
+
+  let primary = "HADIR";
+  let lateMinutes = 0;
+
+  if (nowMin > startMin && nowMin <= lateMin) {
+    primary = "TERLAMBAT";
+    lateMinutes = nowMin - startMin;
+  } else if (nowMin > lateMin) {
+    primary = "TERLAMBAT";
+    lateMinutes = nowMin - startMin;
+  }
+
+  row.primary = primary;
+  row.checkin = now;
+  row.lateMin = primary === "TERLAMBAT" ? lateMinutes : 0;
+
+  day[st.id] = row;
+  setDayAtt(dateIso, day);
+
+  log("Scan masuk", `${st.name} (${st.className}) → ${primary} ${primary==="TERLAMBAT" ? `(${lateMinutes}m)`:""} @ ${now}`);
+
+  if (wa.sendOnScan) {
+    log("WA draft", `Ke ortu ${st.parentPhone}: "${tplWA_scan(st, row, cfg)}"`);
+  }
+
+  return { ok:true, msg:`${st.name} • ${primary} • ${now}`, tone: primary==="TERLAMBAT" ? "warn" : "ok" , student: st, row };
+}
+
+function setPrimaryStatus(studentId, primary, note="") {
+  const u = currentUser();
+  const dateIso = todayISO();
+  const st = getStudents().find(x => x.id === studentId);
+  if (!st) return { ok:false, msg:"Siswa tidak ditemukan." };
+  if (!canAccessStudent(u, st)) return { ok:false, msg:"Akses ditolak: beda scope kelas." };
+
+  const day = ensureDailyRow(dateIso, studentId);
+  const row = day[studentId];
+
+  // Rule: only allow sekretaris/walas/admin
+  if (!["SEKRETARIS","WALAS","ADMIN"].includes(u.role)) {
+    return { ok:false, msg:"Role kamu tidak bisa set IZIN/SAKIT." };
+  }
+
+  row.primary = primary;
+  if (note) row.note = note;
+  // Keep checkin empty for IZIN/SAKIT; if user wants to clear checkin, use admin reset logic
+  if (primary === "IZIN" || primary === "SAKIT") {
+    row.checkin = "-";
+    row.lateMin = "-";
+  }
+
+  day[studentId] = row;
+  setDayAtt(dateIso, day);
+
+  log("Set status", `${st.name} → ${primary} (oleh ${u.role})`);
+  return { ok:true, msg:`${st.name} diset ${primary}` };
+}
+
+function clearStatus(studentId) {
+  const u = currentUser();
+  if (!["WALAS","ADMIN"].includes(u.role)) return { ok:false, msg:"Hanya Walas/Admin yang bisa membatalkan." };
+
+  const dateIso = todayISO();
+  const day = getDayAtt(dateIso);
+  if (!day[studentId]) return { ok:false, msg:"Belum ada data hari ini." };
+
+  day[studentId] = { primary:"-", checkin:"-", lateMin:"-", note:"" };
+  setDayAtt(dateIso, day);
+  log("Batalkan status", `${studentId} direset (oleh ${u.role})`);
+  return { ok:true, msg:"Status direset." };
+}
+
+function addEvent(studentId, type, reason="", mustReturn=false) {
+  const u = currentUser();
+  const cfg = getCfg();
+  const wa = getWA();
+  const dateIso = todayISO();
+  const st = getStudents().find(x => x.id === studentId);
+  if (!st) return { ok:false, msg:"Siswa tidak ditemukan." };
+
+  if (u.role !== "PIKET" && u.role !== "ADMIN") {
+    return { ok:false, msg:"Hanya Piket/Admin yang bisa input event." };
+  }
+
+  // must have daily row (if not, create)
+  const day = ensureDailyRow(dateIso, studentId);
+  const row = day[studentId];
+
+  // If ALPA/IZIN/SAKIT and event being recorded, allow admin only
+  if (["ALPA","IZIN","SAKIT"].includes(row.primary) && u.role !== "ADMIN") {
+    return { ok:false, msg:`Tidak bisa event karena status ${row.primary}.` };
+  }
+
+  const events = getDayEvents(dateIso);
+  const now = nowHHMM();
+
+  if (type === "DISPEN_OUT") {
+    // prevent duplicate OUT if already OUT
+    const lastOut = events.slice().reverse().find(e => e.studentId===studentId && e.type==="DISPEN" && e.state==="OUT");
+    if (lastOut) return { ok:false, msg:"Masih status DISPEN OUT. Balik dulu." };
+
+    events.push({
+      id: crypto.randomUUID(),
+      studentId, type:"DISPEN",
+      out: now, back: null,
+      state:"OUT",
+      mustReturn: !!mustReturn,
+      reason,
+      by: u.role
+    });
+    setDayEvents(dateIso, events);
+    log("Event", `${st.name} DISPEN OUT @ ${now} ${mustReturn? "(wajib kembali)":"(boleh tidak kembali)"}`);
+
+    if (wa.sendOnEvent) log("WA draft", `Ke ortu ${st.parentPhone}: "${tplWA_dispen_out(st, now, reason)}"`);
+    return { ok:true, msg:"DISPEN OUT tersimpan." };
+  }
+
+  if (type === "DISPEN_BACK") {
+    const idx = [...events].reverse().findIndex(e => e.studentId===studentId && e.type==="DISPEN" && e.state==="OUT");
+    if (idx === -1) return { ok:false, msg:"Tidak ada DISPEN OUT yang aktif." };
+
+    const realIdx = events.length - 1 - idx;
+    events[realIdx].back = now;
+    events[realIdx].state = "RETURNED";
+    setDayEvents(dateIso, events);
+    log("Event", `${st.name} DISPEN BACK @ ${now}`);
+
+    if (wa.sendOnEvent) log("WA draft", `Ke ortu ${st.parentPhone}: "${tplWA_dispen_back(st, now)}"`);
+    return { ok:true, msg:"DISPEN BACK tersimpan." };
+  }
+
+  if (type === "PULANG_SAKIT" || type === "PULANG_CEPAT") {
+    events.push({
+      id: crypto.randomUUID(),
+      studentId,
+      type: type === "PULANG_SAKIT" ? "PULANG_SAKIT" : "PULANG_CEPAT",
+      out: now,
+      back: null,
+      state: "OUT",
+      mustReturn: false,
+      reason,
+      by: u.role
+    });
+    setDayEvents(dateIso, events);
+    log("Event", `${st.name} ${type.replace("_"," ")} @ ${now}`);
+
+    if (wa.sendOnEvent) log("WA draft", `Ke ortu ${st.parentPhone}: "${tplWA_pulang(st, type, now, reason)}"`);
+    return { ok:true, msg:"Event pulang tersimpan." };
+  }
+
+  return { ok:false, msg:"Event tidak dikenal." };
+}
+
+function runCutoff() {
+  const cfg = getCfg();
+  const wa = getWA();
+  const dateIso = todayISO();
+  const cutoff = cfg.alfaCutoff;
+
+  const students = getStudents();
+  const day = getDayAtt(dateIso);
+
+  let changed = 0;
+  students.forEach(st => {
+    if (!day[st.id]) day[st.id] = { primary:"-", checkin:"-", lateMin:"-", note:"" };
+
+    const row = day[st.id];
+    const already = row.primary;
+
+    // Skip if already had status (HADIR/TERLAMBAT/IZIN/SAKIT/ALPA)
+    if (["HADIR","TERLAMBAT","IZIN","SAKIT","ALPA"].includes(already)) return;
+
+    // Mark as ALPA
+    row.primary = "ALPA";
+    row.checkin = "-";
+    row.lateMin = "-";
+    day[st.id] = row;
+    changed++;
+
+    if (wa.sendOnAlfa) log("WA draft", `Ke ortu ${st.parentPhone}: "${tplWA_alpa(st, cutoff)}"`);
+  });
+
+  setDayAtt(dateIso, day);
+  log("Cutoff ALPA", `Dijalankan. ${changed} siswa jadi ALPA.`);
+  return changed;
+}
+
+function runEndOfDay() {
+  const dateIso = todayISO();
+  const events = getDayEvents(dateIso);
+  let updated = 0;
+
+  // Mark DISPEN OUT that never returned as NOT_RETURNED
+  events.forEach(e => {
+    if (e.type === "DISPEN" && e.state === "OUT") {
+      e.state = "NOT_RETURNED";
+      updated++;
+    }
+  });
+  setDayEvents(dateIso, events);
+  log("End Of Day", `${updated} event DISPEN ditandai TIDAK KEMBALI.`);
+  return updated;
+}
+
+/* =========================
+   WA TEMPLATE (DEMO DRAFT)
+   ========================= */
+function tplWA_scan(st, row, cfg) {
+  if (row.primary === "TERLAMBAT") {
+    return `Yth. Bapak/Ibu, Ananda ${st.name} (${st.className}) tercatat masuk pukul ${row.checkin}. Status: TERLAMBAT ${row.lateMin} menit.`;
+  }
+  return `Yth. Bapak/Ibu, Ananda ${st.name} (${st.className}) tercatat hadir pukul ${row.checkin}. Terima kasih.`;
+}
+function tplWA_alpa(st, cutoff) {
+  return `Yth. Bapak/Ibu, sampai pukul ${cutoff}, Ananda ${st.name} (${st.className}) belum tercatat hadir di sekolah. Mohon konfirmasi ke wali kelas.`;
+}
+function tplWA_dispen_out(st, out, reason) {
+  return `Info sekolah: Ananda ${st.name} dispensasi keluar pukul ${out}${reason?` (${reason})`:""}.`;
+}
+function tplWA_dispen_back(st, back) {
+  return `Info sekolah: Ananda ${st.name} tercatat kembali ke sekolah pukul ${back}.`;
+}
+function tplWA_pulang(st, type, out, reason) {
+  const label = type === "PULANG_SAKIT" ? "pulang karena sakit" : "pulang lebih cepat";
+  return `Info sekolah: Ananda ${st.name} ${label} pukul ${out}${reason?` (${reason})`:""}.`;
+}
+
+/* =========================
+   RENDER
+   ========================= */
+function renderLogs() {
+  const logs = load(LS.logs, []);
+  const el = $("logArea");
+  if (!el) return;
+  el.innerHTML = logs.length ? logs.map(l => {
+    const t = new Date(l.ts);
+    const hh = String(t.getHours()).padStart(2,"0");
+    const mm = String(t.getMinutes()).padStart(2,"0");
+    return `<div class="glass rounded-2xl p-3">
+      <div class="flex items-center justify-between gap-3">
+        <div class="font-bold text-slate-200 text-sm">${escapeHtml(l.action)}</div>
+        <div class="text-xs text-slate-500 mono">${hh}:${mm}</div>
+      </div>
+      ${l.detail ? `<div class="text-xs text-slate-400 mt-1">${escapeHtml(l.detail)}</div>` : ""}
+    </div>`;
+  }).join("") : `<div class="text-sm text-slate-500 italic py-6 text-center">Belum ada log.</div>`;
+}
+
+function renderStudents() {
+  const u = currentUser();
+  const students = getStudents().filter(s => canAccessStudent(u, s));
+  const el = $("studentList");
+  if (!el) return;
+  el.innerHTML = students.map(s => `
+    <div class="py-3 flex items-center justify-between gap-3">
+      <div>
+        <div class="font-bold">${s.name} <span class="text-slate-500 text-xs">(${s.id})</span></div>
+        <div class="text-xs text-slate-400">${s.className} • Absen ${s.absen}</div>
+      </div>
+      <button class="btn bg-slate-800 hover:bg-slate-700 mono" onclick="copyText('${s.id}')">Copy QR</button>
+    </div>
+  `).join("") || `<div class="text-sm text-slate-500 italic py-6 text-center">Belum ada data siswa. Klik Seed Data di Dashboard.</div>`;
+}
+
+function refreshStats() {
+  const dateIso = todayISO();
+  const students = getStudents();
+  const day = getDayAtt(dateIso);
+
+  const counts = { HADIR:0, TERLAMBAT:0, IZIN:0, SAKIT:0, ALPA:0 };
+  students.forEach(s => {
+    const row = day[s.id];
+    if (!row) return;
+    if (counts[row.primary] !== undefined) counts[row.primary]++;
+  });
+
+  $("statHadir").innerText = counts.HADIR;
+  $("statTelat").innerText = counts.TERLAMBAT;
+  $("statIzin").innerText = counts.IZIN;
+  $("statSakit").innerText = counts.SAKIT;
+  $("statAlpa").innerText = counts.ALPA;
+}
+
+function renderOutList() {
+  const dateIso = todayISO();
+  const events = getDayEvents(dateIso);
+  const students = getStudents();
+  const out = events.filter(e => e.type==="DISPEN" && e.state==="OUT");
+
+  $("outList").innerHTML = out.length ? out.map(e => {
+    const st = students.find(s => s.id === e.studentId);
+    return `<div class="glass rounded-2xl p-3 flex items-center justify-between gap-3">
+      <div>
+        <div class="font-bold">${st?.name || e.studentId} <span class="text-slate-500 text-xs">(${st?.className || "-"})</span></div>
+        <div class="text-xs text-slate-400">Keluar: <b>${e.out}</b> • ${e.mustReturn ? "Wajib kembali" : "Boleh tidak kembali"} ${e.reason?`• ${escapeHtml(e.reason)}`:""}</div>
+      </div>
+      <button class="btn bg-sky-500 hover:bg-sky-400" onclick="quickBack('${e.studentId}')">BALIK</button>
+    </div>`;
+  }).join("") : `<div class="text-sm text-slate-500 italic py-6 text-center">Tidak ada yang sedang dispen.</div>`;
+}
+
+function renderRekap() {
+  const u = currentUser();
+  const dateIso = todayISO();
+  const students = getStudents().filter(s => canAccessStudent(u, s));
+  const day = getDayAtt(dateIso);
+  const events = getDayEvents(dateIso);
+
+  const eventLabel = (sid) => {
+    const e = events.filter(x => x.studentId===sid);
+    if (!e.length) return "-";
+    // compact labels
+    return e.map(x => {
+      if (x.type==="DISPEN") {
+        if (x.state==="RETURNED") return `DISPEN(${x.out}-${x.back})`;
+        if (x.state==="NOT_RETURNED") return `DISPEN(${x.out}-NR)`;
+        return `DISPEN(${x.out}-OUT)`;
+      }
+      if (x.type==="PULANG_SAKIT") return `PULANG SAKIT(${x.out})`;
+      if (x.type==="PULANG_CEPAT") return `PULANG CEPAT(${x.out})`;
+      return x.type;
+    }).join(", ");
+  };
+
+  $("rekapBody").innerHTML = students.map(s => {
+    const r = day[s.id] || { primary:"-", checkin:"-", lateMin:"-", note:"" };
+    const status = r.primary || "-";
+    const chip = statusChip(status);
+    return `<tr class="border-b border-slate-800">
+      <td class="p-3 font-bold">${s.name}</td>
+      <td class="p-3 text-slate-300">${s.className}</td>
+      <td class="p-3">${chip}</td>
+      <td class="p-3 mono">${r.checkin ?? "-"}</td>
+      <td class="p-3 mono">${r.lateMin ?? "-"}</td>
+      <td class="p-3 text-slate-300">${escapeHtml(eventLabel(s.id))}</td>
+    </tr>`;
+  }).join("");
+}
+
+function statusChip(status) {
+  const base = `chip`;
+  if (status==="HADIR") return `<span class="${base} bg-emerald-500/20 text-emerald-300 border border-emerald-500/20">HADIR</span>`;
+  if (status==="TERLAMBAT") return `<span class="${base} bg-amber-500/20 text-amber-300 border border-amber-500/20">TERLAMBAT</span>`;
+  if (status==="IZIN") return `<span class="${base} bg-sky-500/20 text-sky-300 border border-sky-500/20">IZIN</span>`;
+  if (status==="SAKIT") return `<span class="${base} bg-indigo-500/20 text-indigo-300 border border-indigo-500/20">SAKIT</span>`;
+  if (status==="ALPA") return `<span class="${base} bg-rose-500/20 text-rose-300 border border-rose-500/20">ALPA</span>`;
+  return `<span class="${base} bg-slate-700/40 text-slate-200 border border-slate-700/40">-</span>`;
+}
+
+function refreshCfgUI() {
+  const cfg = getCfg();
+  $("cfgStart").innerText = cfg.startTime;
+  $("cfgLate").innerText = cfg.lateDeadline;
+
+  $("setStart").value = cfg.startTime;
+  $("setLate").value = cfg.lateDeadline;
+  $("setCutoff").value = cfg.alfaCutoff;
+  $("setEod").value = cfg.endOfDay;
+
+  const wa = getWA();
+  $("waHadir").checked = !!wa.sendOnScan;
+  $("waAlpa").checked = !!wa.sendOnAlfa;
+  $("waEvent").checked = !!wa.sendOnEvent;
+}
+
+function refreshAll() {
+  $("todayLabel").innerText = `Tanggal: ${fmtDateId(todayISO())} • Jam sekarang: ${nowHHMM()}`;
+  renderLogs();
+  renderStudents();
+  refreshStats();
+  renderOutList();
+  renderRekap();
+  refreshCfgUI();
+}
+
+/* =========================
+   SEARCH & SELECT (Izin/Piket)
+   ========================= */
+let selectedStudentId = null;
+let selectedPiketId = null;
+
+function searchStudents(query, scopeFilter=true) {
+  const u = currentUser();
+  const q = query.trim().toUpperCase();
+  const list = getStudents().filter(s => (scopeFilter ? canAccessStudent(u, s) : true));
+  if (!q) return [];
+  return list.filter(s =>
+    s.name.includes(q) ||
+    s.absen === query.trim() ||
+    s.id.includes(query.trim().toUpperCase())
+  ).slice(0, 8);
+}
+
+function renderSearchRes(containerId, results, onPick) {
+  const el = $(containerId);
+  el.innerHTML = results.length ? results.map(s => `
+    <button class="w-full text-left glass rounded-2xl p-3 hover:border-sky-500/40"
+            onclick="${onPick}('${s.id}')">
+      <div class="font-bold">${s.name} <span class="text-slate-500 text-xs mono">(${s.id})</span></div>
+      <div class="text-xs text-slate-400">${s.className} • Absen ${s.absen}</div>
+    </button>
+  `).join("") : `<div class="text-sm text-slate-500 italic">Tidak ada hasil.</div>`;
+}
+
+window.pickIzin = function(id) {
+  selectedStudentId = id;
+  const st = getStudents().find(x=>x.id===id);
+  const day = getDayAtt(todayISO());
+  const row = day[id] || { primary:"-", checkin:"-", lateMin:"-", note:"" };
+  $("izinSelected").innerText = `${st.name} (${st.className})`;
+  $("izinSelectedInfo").innerText = `Status: ${row.primary} • Masuk: ${row.checkin}`;
+}
+
+window.pickPiket = function(id) {
+  selectedPiketId = id;
+  const st = getStudents().find(x=>x.id===id);
+  $("piketSelected").innerText = `${st.name} (${st.className})`;
+}
+
+window.quickBack = function(id) {
+  selectedPiketId = id;
+  const res = addEvent(id, "DISPEN_BACK", "", false);
+  toast(res.ok ? "✅ "+res.msg : "⚠️ "+res.msg);
+  refreshAll();
+}
+
+/* =========================
+   EXPORT CSV
+   ========================= */
+function exportCSV() {
+  const u = currentUser();
+  const dateIso = todayISO();
+  const students = getStudents().filter(s => canAccessStudent(u, s));
+  const day = getDayAtt(dateIso);
+  const events = getDayEvents(dateIso);
+
+  const eventLabel = (sid) => {
+    const e = events.filter(x => x.studentId===sid);
+    if (!e.length) return "";
+    return e.map(x => {
+      if (x.type==="DISPEN") {
+        if (x.state==="RETURNED") return `DISPEN ${x.out}-${x.back}`;
+        if (x.state==="NOT_RETURNED") return `DISPEN ${x.out}-NR`;
+        return `DISPEN ${x.out}-OUT`;
+      }
+      if (x.type==="PULANG_SAKIT") return `PULANG_SAKIT ${x.out}`;
+      if (x.type==="PULANG_CEPAT") return `PULANG_CEPAT ${x.out}`;
+      return x.type;
+    }).join(" | ");
+  };
+
+  const rows = [
+    ["Tanggal", fmtDateId(dateIso)],
+    [],
+    ["Nama","Kelas","Status","Masuk","TelatMenit","Event","NoOrtu"].join(",")
+  ];
+
+  students.forEach(s => {
+    const r = day[s.id] || { primary:"-", checkin:"-", lateMin:"-", note:"" };
+    rows.push([
+      safeCSV(s.name),
+      safeCSV(s.className),
+      safeCSV(r.primary),
+      safeCSV(r.checkin),
+      safeCSV(r.lateMin),
+      safeCSV(eventLabel(s.id)),
+      safeCSV(s.parentPhone || "")
+    ].join(","));
+  });
+
+  const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `REKAP_${dateIso}.csv`;
+  a.click();
+}
+
+/* =========================
+   UI UTIL
+   ========================= */
+function toast(msg) {
+  // super simple toast
+  const d = document.createElement("div");
+  d.className = "fixed bottom-4 left-1/2 -translate-x-1/2 glass px-4 py-3 rounded-2xl text-sm border border-slate-700 z-[9999]";
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), 2200);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function safeCSV(s){ return `"${String(s ?? "").replace(/"/g,'""')}"`; }
+function copyText(t){ navigator.clipboard?.writeText(t); toast("📋 Copied: "+t); }
+
+/* =========================
+   EVENTS
+   ========================= */
+$("btnLogin").onclick = () => {
+  const u = $("loginUser").value.trim().toLowerCase();
+  const p = $("loginPass").value.trim();
+  const acc = USERS[u];
+
+  if (!acc || acc.pass !== p) return toast("❌ Login gagal");
+  setUser({ username:u, role:acc.role, scope:acc.scope });
+
+  $("badgeUser").classList.remove("hidden");
+  $("btnLogout").classList.remove("hidden");
+  $("badgeUser").innerHTML = `<div class="text-xs text-slate-400">Login sebagai</div><div class="font-bold">${acc.role} <span class="text-slate-400">(${u})</span></div>`;
+
+  show("app");
+  applyRoleAccess();
+  refreshAll();
+  toast("✅ Login sukses");
+};
+
+$("btnLogout").onclick = () => {
+  localStorage.removeItem(LS.user);
+  $("badgeUser").classList.add("hidden");
+  $("btnLogout").classList.add("hidden");
+  show("login");
+  toast("👋 Logout");
+};
+
+// Tabs
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  setActiveTab(b.dataset.tab);
+  refreshAll();
+});
+
+$("btnSeed").onclick = () => seedStudents();
+$("btnRunCutoff").onclick = () => { runCutoff(); refreshAll(); toast("⏱ Cutoff dijalankan"); };
+
+$("btnScan").onclick = () => {
+  const payload = $("scanInput").value;
+  const res = doScan(payload);
+  const box = $("scanFeedback");
+  box.classList.remove("hidden");
+  box.classList.remove("border-emerald-500/30","bg-emerald-500/10","border-amber-500/30","bg-amber-500/10","border-rose-500/30","bg-rose-500/10");
+
+  if (res.tone==="ok") box.classList.add("border-emerald-500/30","bg-emerald-500/10");
+  else if (res.tone==="warn") box.classList.add("border-amber-500/30","bg-amber-500/10");
+  else box.classList.add("border-rose-500/30","bg-rose-500/10");
+
+  box.innerHTML = `
+    <div class="text-2xl font-extrabold">${res.ok ? "✅" : "⚠️"} ${escapeHtml(res.ok ? "BERHASIL" : "GAGAL")}</div>
+    <div class="mt-2 text-sm text-slate-200">${escapeHtml(res.msg)}</div>
+  `;
+  refreshAll();
+};
+
+// Izin search
+$("izinSearch").addEventListener("input", (e) => {
+  const res = searchStudents(e.target.value, true);
+  renderSearchRes("izinSearchRes", res, "pickIzin");
+});
+
+// Izin actions
+$("btnSetIzin").onclick = () => {
+  if (!selectedStudentId) return toast("Pilih siswa dulu.");
+  const note = $("izinNote").value.trim();
+  const r = setPrimaryStatus(selectedStudentId, "IZIN", note);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnSetSakit").onclick = () => {
+  if (!selectedStudentId) return toast("Pilih siswa dulu.");
+  const note = $("izinNote").value.trim();
+  const r = setPrimaryStatus(selectedStudentId, "SAKIT", note);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnClearStatus").onclick = () => {
+  if (!selectedStudentId) return toast("Pilih siswa dulu.");
+  const r = clearStatus(selectedStudentId);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnNote").onclick = () => {
+  toast("🗒️ Catatan disimpan otomatis saat set status.");
+};
+
+// Piket search
+$("piketSearch").addEventListener("input", (e) => {
+  // piket can search all, but demo keeps scope check on actions
+  const res = searchStudents(e.target.value, false);
+  renderSearchRes("piketSearchRes", res, "pickPiket");
+});
+
+// Piket actions
+$("btnDispenOut").onclick = () => {
+  if (!selectedPiketId) return toast("Pilih siswa dulu.");
+  const reason = $("piketReason").value.trim();
+  const must = $("mustReturn").checked;
+  const r = addEvent(selectedPiketId, "DISPEN_OUT", reason, must);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnDispenBack").onclick = () => {
+  if (!selectedPiketId) return toast("Pilih siswa dulu.");
+  const r = addEvent(selectedPiketId, "DISPEN_BACK", "", false);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnPulangSakit").onclick = () => {
+  if (!selectedPiketId) return toast("Pilih siswa dulu.");
+  const reason = $("piketReason").value.trim();
+  const r = addEvent(selectedPiketId, "PULANG_SAKIT", reason, false);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+$("btnPulangCepat").onclick = () => {
+  if (!selectedPiketId) return toast("Pilih siswa dulu.");
+  const reason = $("piketReason").value.trim();
+  const r = addEvent(selectedPiketId, "PULANG_CEPAT", reason, false);
+  toast(r.ok ? "✅ "+r.msg : "⚠️ "+r.msg);
+  refreshAll();
+};
+
+// Rekap
+$("btnExport").onclick = exportCSV;
+$("btnRefreshRekap").onclick = () => { refreshAll(); toast("🔄 Refreshed"); };
+
+// Admin
+$("btnSaveCfg").onclick = () => {
+  const u = currentUser();
+  if (!u || u.role !== "ADMIN") return toast("Hanya Admin.");
+  const cfg = {
+    startTime: $("setStart").value || DEFAULT_CFG.startTime,
+    lateDeadline: $("setLate").value || DEFAULT_CFG.lateDeadline,
+    alfaCutoff: $("setCutoff").value || DEFAULT_CFG.alfaCutoff,
+    endOfDay: $("setEod").value || DEFAULT_CFG.endOfDay
+  };
+  setCfg(cfg);
+  log("Config saved", JSON.stringify(cfg));
+  refreshAll();
+  toast("✅ Config disimpan");
+};
+
+$("btnSaveWA").onclick = () => {
+  const u = currentUser();
+  if (!u || u.role !== "ADMIN") return toast("Hanya Admin.");
+  setWA({
+    sendOnScan: $("waHadir").checked,
+    sendOnAlfa: $("waAlpa").checked,
+    sendOnEvent: $("waEvent").checked
+  });
+  log("WA toggle saved", JSON.stringify(getWA()));
+  toast("✅ WA toggle disimpan");
+};
+
+$("btnReset").onclick = () => {
+  const u = currentUser();
+  if (!u || u.role !== "ADMIN") return toast("Hanya Admin.");
+  Object.values(LS).forEach(k => localStorage.removeItem(k));
+  setCfg(DEFAULT_CFG);
+  setWA(DEFAULT_WA);
+  log("Reset demo", "LocalStorage dibersihkan.");
+  toast("🧨 Reset done. Silakan login ulang.");
+  location.reload();
+};
+
+$("btnEOD").onclick = () => {
+  const u = currentUser();
+  if (!u || u.role !== "ADMIN") return toast("Hanya Admin.");
+  runEndOfDay();
+  refreshAll();
+  toast("🌙 End of day dijalankan");
+};
+
+// Initial boot
+(function init(){
+  // ensure cfg exists
+  if (!localStorage.getItem(LS.cfg)) setCfg(DEFAULT_CFG);
+  if (!localStorage.getItem(LS.wa)) setWA(DEFAULT_WA);
+
+  const u = currentUser();
+  if (u) {
+    $("badgeUser").classList.remove("hidden");
+    $("btnLogout").classList.remove("hidden");
+    $("badgeUser").innerHTML = `<div class="text-xs text-slate-400">Login sebagai</div><div class="font-bold">${u.role} <span class="text-slate-400">(${u.username})</span></div>`;
+    show("app");
+    applyRoleAccess();
+    refreshAll();
+  } else {
+    show("login");
+  }
+
+  // set active dashboard label timer
+  setInterval(()=> {
+    if (!$("viewApp").classList.contains("hidden")) {
+      $("todayLabel").innerText = `Tanggal: ${fmtDateId(todayISO())} • Jam sekarang: ${nowHHMM()}`;
+    }
+  }, 1000*10);
+})();
+</script>
+</body>
+</html>
