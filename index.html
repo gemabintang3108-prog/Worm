@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dzuhur 12 - Smart Gate V4</title>
+    <title>Dzuhur 12 - Smart Gate V5</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0d1117">
@@ -47,26 +47,34 @@
     </div>
 
     <div id="modal-login" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] flex items-center justify-center p-4">
-    <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
-        <h2 class="text-xl font-bold text-white mb-6 italic uppercase tracking-widest">PILIH AKSES LOGIN</h2>
-        
-        <div class="space-y-3">
-            <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-2">
-                <option value="sekretaris">SEKRETARIS KELAS</option>
-                <option value="piket">GURU PIKET</option>
-                <option value="guru">GURU / WALAS</option>
-                <option value="admin">ADMIN SISTEM</option>
-            </select>
-
-            <input type="text" id="login-user" placeholder="Username / Kelas (X-1)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
-            
-            <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
-            
-            <button onclick="prosesLoginMulti()" class="w-full py-4 bg-cyan-600 text-white font-bold rounded-2xl shadow-lg uppercase text-xs mt-4">MASUK</button>
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
+            <h2 class="text-xl font-bold text-white mb-6 italic uppercase tracking-widest">PILIH AKSES LOGIN</h2>
+            <div class="space-y-3">
+                <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-2">
+                    <option value="sekretaris">SEKRETARIS KELAS</option>
+                    <option value="piket">GURU PIKET</option>
+                    <option value="guru">GURU / WALAS</option>
+                    <option value="admin">ADMIN SISTEM</option>
+                </select>
+                <input type="text" id="login-user" placeholder="Username / Kelas (Contoh: X-1)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
+                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
+                <button onclick="prosesLoginMulti()" class="w-full py-4 bg-cyan-600 text-white font-bold rounded-2xl shadow-lg uppercase text-xs mt-4">MASUK</button>
+            </div>
         </div>
     </div>
-</div>
 
+    <div id="modal-izin" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden items-center justify-center p-4">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-orange-500/30 text-center">
+            <h2 class="text-xl font-bold text-white mb-4 italic">INPUT IZIN SISWA</h2>
+            <p id="nama-siswa-izin" class="text-cyan-400 font-bold mb-6 uppercase"></p>
+            <div class="grid gap-3">
+                <button onclick="updateStatusIzin('IZIN SAKIT')" class="py-4 bg-red-900/40 text-red-400 border border-red-500/20 rounded-2xl font-bold text-xs uppercase">🤒 Sakit / Pulang</button>
+                <button onclick="updateStatusIzin('PULANG CEPAT')" class="py-4 bg-orange-900/40 text-orange-400 border border-orange-500/20 rounded-2xl font-bold text-xs uppercase">🏠 Pulang Cepat</button>
+                <button onclick="updateStatusIzin('DISPENSASI')" class="py-4 bg-blue-900/40 text-blue-400 border border-blue-500/20 rounded-2xl font-bold text-xs uppercase">🏆 Dispensasi</button>
+                <button onclick="tutupModalIzin()" class="mt-4 text-gray-500 text-[10px] uppercase font-bold italic">Batal</button>
+            </div>
+        </div>
+    </div>
 
     <main class="max-w-2xl mx-auto px-4">
         <section id="tab-admin" class="space-y-6">
@@ -133,39 +141,73 @@
     <div id="hidden-qr-engine" style="position: absolute; left: -9999px; top: 0;"></div>
 
     <script>
+        // --- KONFIGURASI ---
         const PW_LIST = {
-    admin: "admin123",
-    piket: "piket12",
-    // Password Sekretaris per Kelas
-    sekretaris: {
-        "X-1": "bintangX1",
-        "X-2": "bintangX2",
-        "X-3": "bintangX3",
-        "XI-1": "bintangXI1"
-    },
-    // Password Guru/Walas
-    guru: {
-        "pak-yahya": "yahya123",
-        "bu-siti": "siti456"
-    }
-}; 
-        const GITHUB_TOKEN = ""; 
-        const GIST_ID_UTAMA = "8f37fc18c4d3593486f97919ca9f"; 
+            admin: "admin123",
+            piket: "piket12",
+            sekretaris: { "X-1": "bintangX1", "X-2": "bintangX2", "X-3": "bintangX3" },
+            guru: { "pak-yahya": "yahya123" }
+        }; 
+        const GITHUB_TOKEN = ""; // WAJIB ISI TOKEN
+        const GIST_ID_UTAMA = "8f37fc18c4fb9bd3593486f97919ca9f"; 
         const DAFTAR_KELAS = ["X-1", "X-2", "X-3", "X-4", "X-5", "X-6", "XI-1", "XI-2", "XI-3", "XI-4", "XI-5", "XI-6", "XII-1", "XII-2", "XII-3", "XII-4", "XII-5", "XII-6"];
         
+        // --- STATE ---
+        let currentRole = null;
+        let currentIdent = null;
         let isGuruLoggedIn = false;
         let localDB = {}; 
         let currentMode = 'Islam';
         let html5QrScanner;
+        let tempIzinData = null;
 
+        // --- INIT & PERSISTENCE ---
         async function init() {
-            if(localStorage.getItem('guruLogin') === 'true') { isGuruLoggedIn = true; updateUIAfterLogin(); }
+            const savedRole = localStorage.getItem('userRole');
+            const savedIdent = localStorage.getItem('userIdent');
+            if (savedRole) {
+                currentRole = savedRole; currentIdent = savedIdent; isGuruLoggedIn = true;
+                updateUIAfterLogin(); aturFiturBerdasarkanRole();
+            }
             const adminSelect = document.getElementById('select-kelas-admin');
             DAFTAR_KELAS.forEach(cls => { adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`; });
             await loadAllData();
             document.getElementById('loading-overlay').classList.add('hidden');
         }
 
+        // --- LOGIN LOGIC ---
+        function prosesLoginMulti() {
+            const role = document.getElementById('login-role').value;
+            const user = document.getElementById('login-user').value.toUpperCase();
+            const pass = document.getElementById('login-pass').value;
+            let sukses = false;
+
+            if (role === 'admin' && pass === PW_LIST.admin) { sukses = true; currentRole = 'ADMIN'; }
+            else if (role === 'piket' && pass === PW_LIST.piket) { sukses = true; currentRole = 'PIKET'; }
+            else if (role === 'sekretaris' && PW_LIST.sekretaris[user] === pass) { sukses = true; currentRole = 'SEKRETARIS'; currentIdent = user; }
+            else if (role === 'guru' && PW_LIST.guru[user.toLowerCase()] === pass) { sukses = true; currentRole = 'GURU'; currentIdent = user; }
+
+            if (sukses) {
+                localStorage.setItem('userRole', currentRole);
+                localStorage.setItem('userIdent', currentIdent || "");
+                isGuruLoggedIn = true; tutupLogin(); updateUIAfterLogin(); aturFiturBerdasarkanRole();
+                alert(`Login Berhasil: ${currentRole}`);
+            } else alert("Akses Ditolak!");
+        }
+
+        function aturFiturBerdasarkanRole() {
+            const bulk = document.getElementById('bulk-area-guru');
+            bulk.classList.add('hidden');
+            if (currentRole === 'ADMIN') switchTab('admin');
+            else if (currentRole === 'GURU') { bulk.classList.remove('hidden'); switchTab('scan'); }
+            else switchTab('scan');
+        }
+
+        function prosesLogout() { 
+            if(confirm("Logout?")) { localStorage.clear(); window.location.reload(); }
+        }
+
+        // --- DATABASE ---
         async function loadAllData() {
             try {
                 const res = await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}?t=${new Date().getTime()}`);
@@ -175,10 +217,11 @@
                     localDB[cls] = data.files[fileName] ? JSON.parse(data.files[fileName].content) : [];
                 });
                 renderLog();
-            } catch (e) { console.error("Database Down!"); }
+            } catch (e) { console.error("Database error"); }
         }
 
         async function syncToGithub(kelas) {
+            if(!GITHUB_TOKEN) return;
             const fileName = `${kelas}.json`;
             await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}`, {
                 method: "PATCH",
@@ -187,184 +230,100 @@
             });
         }
 
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('mode-islam').classList.toggle('active-mode-islam', mode === 'Islam');
-            document.getElementById('mode-kristen').classList.toggle('active-mode-kristen', mode === 'Kristen');
-        }
-
-        async function buatQR() {
-            const n = document.getElementById('input-nama').value.trim();
-            const k = document.getElementById('select-kelas-admin').value;
-            const a = document.getElementById('input-nis').value.trim();
-            const ag = document.getElementById('select-agama').value;
-            const jk = document.getElementById('select-jk').value;
-            if(!n || !a) return alert("Isi data!");
-            if (localDB[k].some(d => d.Absen === a)) return alert("Absen kedaftar!");
-            
-            localDB[k].push({ Nama: n, Kelas: k, Absen: a, JK: jk, Agama: ag, Jam: "-", Tanggal: "-", Status: "-", KehadiranKe: 0 });
-            await syncToGithub(k);
-            
-            const area = document.getElementById('qr-result-area');
-            area.innerHTML = `<div id="qrd" class="p-8 bg-white rounded-[2.5rem] flex flex-col items-center mt-6">
-                <div id="qri" class="mb-4"></div><b class="text-black uppercase text-xl">${n}</b><p class="text-gray-500 font-bold uppercase text-[9px]">${k} • ${jk} • ${ag} • ABSEN ${a}</p>
-            </div><button onclick="downloadQR('${n}')" class="mt-4 bg-cyan-600 p-4 w-full max-w-[280px] rounded-2xl font-black italic text-white text-xs uppercase">💾 Simpan Kartu</button>`;
-            new QRCode(document.getElementById("qri"), { text: `${n}|${k}|${a}|${jk}|${ag}`, width: 200, height: 200, correctLevel : QRCode.CorrectLevel.H });
-        }
-
+        // --- ABSENSI & SCAN ---
         async function prosesAbsen(text) {
             const [nama, kelas, absen, jk, agama] = text.split('|');
-            const now = new Date();
-            const today = now.toLocaleDateString('id-ID');
-            
-            if (agama !== currentMode) return showFeedback("❌", nama, `SALAH PINTU! KHUSUS ${currentMode.toUpperCase()}`, "bg-red-700");
-            if (localDB[kelas].some(d => d.Absen === absen && d.Tanggal === today)) return showFeedback("⚠️", nama, "SUDAH SCAN HARI INI!", "bg-yellow-600");
+            const now = new Date(); const today = now.toLocaleDateString('id-ID');
+            if (agama !== currentMode) return showFeedback("❌", nama, "SALAH PINTU!", "bg-red-700");
+            if (localDB[kelas].some(d => d.Absen === absen && d.Tanggal === today)) return showFeedback("⚠️", nama, "SUDAH SCAN!", "bg-yellow-600");
 
             let idx = localDB[kelas].findIndex(d => d.Absen === absen);
             if (idx !== -1) {
-                const tipeStatus = currentMode === 'Islam' ? 'DZUHUR' : 'IBADAH';
                 localDB[kelas][idx].Jam = now.toLocaleTimeString('id-ID');
                 localDB[kelas][idx].Tanggal = today;
-                localDB[kelas][idx].Status = tipeStatus;
+                localDB[kelas][idx].Status = currentMode === 'Islam' ? 'DZUHUR' : 'IBADAH';
                 localDB[kelas][idx].KehadiranKe = (parseInt(localDB[kelas][idx].KehadiranKe) || 0) + 1;
-                
-                showFeedback("✅", nama, `${tipeStatus} BERHASIL`, "bg-green-600");
-                renderLog();
-                await syncToGithub(kelas);
+                showFeedback("✅", nama, "BERHASIL", "bg-green-600"); renderLog(); await syncToGithub(kelas);
             }
         }
 
-        async function downloadZipLaporan() {
-            const btn = document.getElementById('btn-zip-laporan');
-            btn.innerText = "⏳ PROCESSING..."; btn.disabled = true;
-            const zip = new JSZip();
-            const today = new Date().toLocaleDateString('id-ID');
-            for (const cls of DAFTAR_KELAS) {
-                if (localDB[cls].length > 0) {
-                    let sorted = [...localDB[cls]].sort((a,b) => parseInt(a.Absen)-parseInt(b.Absen));
-                    const dataExcel = sorted.map(s => {
-                        const isHadir = s.Tanggal === today;
-                        return {
-                            "ABSEN": s.Absen, "NAMA": s.Nama.toUpperCase(), "JK": s.JK || "-", "AGAMA": s.Agama || "Islam",
-                            "STATUS": isHadir ? `✓ ${s.Status}` : "X ALFA",
-                            "JAM": isHadir ? s.Jam : "-", "TOTAL": s.KehadiranKe || 0
-                        };
-                    });
-                    const ws = XLSX.utils.json_to_sheet(dataExcel);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "REKAP");
-                    zip.file(`REKAP_${cls}_${today.replace(/\//g, '-')}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
-                }
-            }
-            const content = await zip.generateAsync({type:"blob"});
-            const l = document.createElement('a'); l.href = URL.createObjectURL(content);
-            l.download = `ABSEN_SMA12_${today.replace(/\//g, '-')}.zip`; l.click();
-            btn.innerText = "📦 Download Rekap Harian (ZIP)"; btn.disabled = false;
-        }
-
+        // --- FITUR GURU PIKET (IZIN) ---
         function renderLog() {
             const list = document.getElementById('log-list');
             const today = new Date().toLocaleDateString('id-ID');
             let allLogs = [];
             DAFTAR_KELAS.forEach(cls => { localDB[cls].filter(d => d.Tanggal === today).forEach(d => allLogs.push(d)); });
             allLogs.sort((a,b) => b.Jam.localeCompare(a.Jam));
-            list.innerHTML = allLogs.length === 0 ? `<p class="text-center text-gray-600 py-10 italic text-[10px] uppercase">Belum ada scan masuk...</p>` :
-                allLogs.slice(0, 30).map(d => `<div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500 mb-2">
-                    <div><b class="text-white text-xs uppercase">${d.Nama}</b><div class="text-[8px] text-gray-500">${d.JK} • ${d.Agama} • ${d.Status} • ${d.Jam}</div></div>
-                    <div class="bg-gray-900 px-3 py-1 rounded-lg text-cyan-400 font-black text-[10px]">#${d.KehadiranKe}</div></div>`).join('');
+            
+            list.innerHTML = allLogs.length === 0 ? `<p class="text-center py-10 opacity-50 text-xs">Kosong</p>` :
+                allLogs.map(d => `
+                    <div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500 mb-2">
+                        <div><b class="text-white text-xs uppercase">${d.Nama}</b><div class="text-[8px] text-gray-500">${d.Kelas} • ${d.Status} • ${d.Jam}</div></div>
+                        <div class="flex gap-2">
+                            ${currentRole === 'PIKET' || currentRole === 'ADMIN' ? `<button onclick="bukaModalIzin('${d.Nama}', '${d.Kelas}', '${d.Absen}')" class="bg-orange-600/20 text-orange-400 border border-orange-500/30 px-2 py-1 rounded-lg text-[8px] font-black">IZIN</button>` : ''}
+                            <div class="bg-gray-900 px-3 py-1 rounded-lg text-cyan-400 font-black text-[10px]">#${d.KehadiranKe}</div>
+                        </div>
+                    </div>`).join('');
         }
 
-        async function prosesBulkQR() {
-            const input = document.getElementById('bulk-input').value.trim();
-            const k = document.getElementById('select-kelas-admin').value;
-            if(!input) return;
-            const zip = new JSZip();
-            document.getElementById('loading-overlay').classList.remove('hidden');
-            const lines = input.split('\n');
-            for (let i = 0; i < lines.length; i++) {
-                const p = lines[i].trim().split(' ');
-                const agama = p.pop(); const jk = p.pop(); const absen = p.pop(); const nama = p.join(' ');
-                if(!nama || isNaN(absen)) continue;
-                if (!localDB[k].some(d => d.Absen === absen)) {
-                    localDB[k].push({ Nama: nama, Kelas: k, Absen: absen, JK: jk, Agama: agama, Jam: "-", Tanggal: "-", Status: "-", KehadiranKe: 0 });
-                }
-                const engine = document.getElementById('hidden-qr-engine');
-                engine.innerHTML = `<div id="tmp-card" style="padding:40px; background:white; width:350px; text-align:center;"><div id="tmp-img" style="display:flex; justify-content:center;"></div><div style="margin-top:20px;"><b style="color:black; font-size:24px; text-transform:uppercase;">${nama}</b><p style="color:#666; font-weight:bold; font-size:12px;">${k} - ${jk} - ${agama} - ABSEN ${absen}</p></div></div>`;
-                new QRCode(document.getElementById("tmp-img"), { text: `${nama}|${k}|${absen}|${jk}|${agama}`, width: 250, height: 250 });
-                await new Promise(r => setTimeout(r, 200));
-                const canvas = await html2canvas(document.getElementById('tmp-card'), {scale: 2});
-                zip.file(`${k}/QR_${absen}_${nama}.png`, canvas.toDataURL("image/png").split(',')[1], {base64: true});
+        function bukaModalIzin(nama, kelas, absen) {
+            tempIzinData = { nama, kelas, absen };
+            document.getElementById('nama-siswa-izin').innerText = nama;
+            document.getElementById('modal-izin').classList.remove('hidden');
+            document.getElementById('modal-izin').classList.add('flex');
+        }
+
+        async function updateStatusIzin(tipe) {
+            const { nama, kelas, absen } = tempIzinData;
+            let idx = localDB[kelas].findIndex(d => d.Absen === absen);
+            if (idx !== -1) {
+                localDB[kelas][idx].Status = tipe;
+                alert(`${nama}: ${tipe} Berhasil`);
+                tutupModalIzin(); renderLog(); await syncToGithub(kelas);
             }
-            await syncToGithub(k);
+        }
+
+        function tutupModalIzin() { document.getElementById('modal-izin').classList.add('hidden'); document.getElementById('modal-izin').classList.remove('flex'); }
+
+        // --- DOWNLOAD & TOOLS ---
+        async function downloadZipLaporan() {
+            const zip = new JSZip(); const today = new Date().toLocaleDateString('id-ID');
+            for (const cls of DAFTAR_KELAS) {
+                if (localDB[cls].length > 0) {
+                    const ws = XLSX.utils.json_to_sheet(localDB[cls]);
+                    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "REKAP");
+                    zip.file(`REKAP_${cls}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
+                }
+            }
             const content = await zip.generateAsync({type:"blob"});
-            const l = document.createElement('a'); l.href = URL.createObjectURL(content); l.download = `QR_BULK_${k}.zip`; l.click();
-            document.getElementById('loading-overlay').classList.add('hidden');
+            const l = document.createElement('a'); l.href = URL.createObjectURL(content); l.download = `ABSEN_SMA12.zip`; l.click();
         }
 
-        // UI HELPERS
-        function switchTab(t) { if (t === 'scan' && !isGuruLoggedIn) { document.getElementById('modal-login').classList.remove('hidden'); document.getElementById('modal-login').classList.add('flex'); return; } document.getElementById('tab-admin').classList.toggle('hidden', t !== 'admin'); document.getElementById('tab-scan').classList.toggle('hidden', t !== 'scan'); document.getElementById('btn-admin').classList.toggle('active-tab', t === 'admin'); document.getElementById('btn-scan').classList.toggle('active-tab', t === 'scan'); if(t !== 'scan') stopScanner(); }
-        function prosesLoginMulti() {
-    const role = document.getElementById('login-role').value;
-    const user = document.getElementById('login-user').value.toUpperCase(); // Biar input x-1 jadi X-1
-    const pass = document.getElementById('login-pass').value;
-
-    let loginSukses = false;
-
-    if (role === 'admin' && pass === PW_LIST.admin) {
-        loginSukses = true;
-        currentRole = 'ADMIN';
-    } 
-    else if (role === 'piket' && pass === PW_LIST.piket) {
-        loginSukses = true;
-        currentRole = 'PIKET';
-    }
-    else if (role === 'sekretaris') {
-        if (PW_LIST.sekretaris[user] && pass === PW_LIST.sekretaris[user]) {
-            loginSukses = true;
-            currentRole = 'SEKRETARIS';
-            currentKelas = user; // Biar dia cuma bisa absen kelasnya sendiri
+        // --- UI HELPERS ---
+        function switchTab(t) { 
+            if (!isGuruLoggedIn) { document.getElementById('modal-login').classList.remove('hidden'); return; } 
+            document.getElementById('tab-admin').classList.toggle('hidden', t !== 'admin'); 
+            document.getElementById('tab-scan').classList.toggle('hidden', t !== 'scan'); 
+            document.getElementById('btn-admin').classList.toggle('active-tab', t === 'admin'); 
+            document.getElementById('btn-scan').classList.toggle('active-tab', t === 'scan'); 
+            if(t !== 'scan') stopScanner(); 
         }
-    }
-    else if (role === 'guru') {
-        if (PW_LIST.guru[user.toLowerCase()] && pass === PW_LIST.guru[user.toLowerCase()]) {
-            loginSukses = true;
-            currentRole = 'GURU';
-        }
-    }
-
-    if (loginSukses) {
-        isGuruLoggedIn = true; // Flag global dari base kode lo
-        localStorage.setItem('role', currentRole);
-        tutupLogin();
-        alert(`Selamat Datang ${currentRole} ${user || ''}`);
-        // Panggil fungsi buat nampilin fitur sesuai role
-        aturFiturBerdasarkanRole(); 
-    } else {
-        alert("Akses Ditolak! Cek Username/Kelas & Password.");
-    }
-}     
-        function tutupLogin() { document.getElementById('modal-login').classList.add('hidden'); document.getElementById('modal-login').classList.remove('flex'); }
-        function updateUIAfterLogin() { document.getElementById('bulk-area-guru').classList.remove('hidden'); document.getElementById('btn-logout').classList.remove('hidden'); }
-        function prosesLogout() { isGuruLoggedIn = false; localStorage.removeItem('guruLogin'); window.location.reload(); }
-        function downloadQR(n) { html2canvas(document.getElementById('qrd'), {scale: 3}).then(c => { let l=document.createElement('a'); l.href=c.toDataURL(); l.download=`QR_${n}.png`; l.click(); }); }
-        
+        function tutupLogin() { document.getElementById('modal-login').classList.add('hidden'); }
+        function updateUIAfterLogin() { document.getElementById('btn-logout').classList.remove('hidden'); }
         function startScanner() {
             document.getElementById('btn-start-cam').classList.add('hidden');
             document.getElementById('btn-stop-cam').classList.remove('hidden');
-            if (html5QrScanner) { html5QrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => prosesAbsen(text));
-            } else { html5QrScanner = new Html5Qrcode("reader"); startScanner(); }
+            if (!html5QrScanner) html5QrScanner = new Html5Qrcode("reader");
+            html5QrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => prosesAbsen(text));
         }
         async function stopScanner() { if (html5QrScanner && html5QrScanner.isScanning) await html5QrScanner.stop(); document.getElementById('btn-start-cam').classList.remove('hidden'); document.getElementById('btn-stop-cam').classList.add('hidden'); }
-
         function showFeedback(i, n, f, b) {
             const fb = document.getElementById('scan-feedback');
-            document.getElementById('check-icons').innerText = i;
-            document.getElementById('scanned-name').innerText = n;
-            document.getElementById('scanned-info').innerText = f;
+            document.getElementById('check-icons').innerText = i; document.getElementById('scanned-name').innerText = n; document.getElementById('scanned-info').innerText = f;
             document.getElementById('feedback-content').className = `text-center text-white p-10 rounded-[3rem] shadow-2xl ${b} border border-white/20`;
-            fb.classList.remove('hidden');
-            setTimeout(() => fb.classList.add('hidden'), 2000);
+            fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2000);
         }
+        function setMode(mode) { currentMode = mode; document.getElementById('mode-islam').classList.toggle('active-mode-islam', mode === 'Islam'); document.getElementById('mode-kristen').classList.toggle('active-mode-kristen', mode === 'Kristen'); }
 
         window.onload = init;
     </script>
