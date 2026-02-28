@@ -1,331 +1,952 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dzuhur 12 - Smart Gate V5</title>
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0d1117">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d1117; color: #c9d1d9; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
-        .active-tab { background: #0891b2; color: white; box-shadow: 0 0 20px rgba(8, 145, 178, 0.5); }
-        .active-mode-islam { background: #15803d; color: white; border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
-        .active-mode-kristen { background: #1d4ed8; color: white; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
-        #reader { border: none !important; border-radius: 1.5rem; overflow: hidden; background: #000; }
-        .log-item { animation: slideIn 0.3s ease-out forwards; }
-        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Smart Gate - Sekolah (2 Kelas)</title>
+  <meta name="theme-color" content="#0d1117" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background:#0d1117; color:#c9d1d9; -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
+    .active-tab { background:#0891b2; color:#fff; box-shadow: 0 0 20px rgba(8,145,178,.5); }
+    #reader { border:none !important; border-radius:1.5rem; overflow:hidden; background:#000; }
+    .log-item { animation: slideIn .25s ease-out forwards; }
+    @keyframes slideIn { from { transform: translateY(10px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+  </style>
 </head>
+
 <body class="pb-10">
+  <!-- Loading -->
+  <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center gap-4">
+    <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-cyan-400 font-bold text-[10px] tracking-[0.3em] animate-pulse uppercase">SINKRONISASI DATABASE...</p>
+  </div>
 
-    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center gap-4 transition-opacity duration-500">
-        <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-cyan-400 font-bold text-[10px] tracking-[0.3em] animate-pulse uppercase">SINKRONISASI DATABASE...</p>
+  <!-- Header -->
+  <header class="py-8 text-center relative">
+    <h1 class="text-3xl font-extrabold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent italic uppercase tracking-tighter">
+      Smart Gate Sekolah
+    </h1>
+    <p class="text-[9px] text-cyan-500 mt-2 uppercase tracking-[0.3em] font-black italic">Uji Coba 2 Kelas (X-1 & X-2)</p>
+
+    <div class="absolute top-4 left-4 flex flex-col items-start gap-1">
+      <div id="badge-role" class="hidden px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest glass border border-cyan-500/20 text-cyan-300">
+        ROLE: -
+      </div>
+      <div id="badge-scope" class="hidden px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest glass border border-gray-700 text-gray-300">
+        KELAS: -
+      </div>
     </div>
 
-    <header class="py-8 text-center relative">
-        <h1 class="text-4xl font-extrabold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent italic uppercase tracking-tighter">Dzuhur 12</h1>
-        <p class="text-[9px] text-cyan-500 mt-2 uppercase tracking-[0.3em] font-black italic">Rohis Sma 12 Jakarta</p>
-        <button id="btn-logout" onclick="prosesLogout()" class="hidden absolute top-4 right-4 bg-red-900/30 text-red-500 border border-red-500/30 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest">Logout</button>
-    </header>
+    <button id="btn-logout" onclick="logout()" class="hidden absolute top-4 right-4 bg-red-900/30 text-red-500 border border-red-500/30 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">
+      Logout
+    </button>
+  </header>
 
-    <div class="flex justify-center mb-8 px-4 relative z-[50]">
-        <div class="glass p-1.5 rounded-2xl flex gap-2 w-full max-w-[320px]">
-            <button onclick="switchTab('admin')" id="btn-admin" class="flex-1 py-3.5 rounded-xl font-bold active-tab text-xs transition-all duration-300">🎫 KARTU</button>
-            <button onclick="switchTab('scan')" id="btn-scan" class="flex-1 py-3.5 rounded-xl font-bold text-gray-400 text-xs transition-all duration-300">📷 SCANNER</button>
+  <!-- Tabs -->
+  <div class="flex justify-center mb-6 px-4 relative z-[50]">
+    <div class="glass p-1.5 rounded-2xl flex gap-2 w-full max-w-[360px]">
+      <button onclick="switchTab('admin')" id="btn-admin" class="flex-1 py-3.5 rounded-xl font-bold active-tab text-xs transition-all duration-300">⚙️ ADMIN</button>
+      <button onclick="switchTab('scan')" id="btn-scan" class="flex-1 py-3.5 rounded-xl font-bold text-gray-400 text-xs transition-all duration-300">📷 SCAN</button>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="modal-login" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden items-center justify-center p-4">
+    <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
+      <h2 class="text-xl font-extrabold text-white mb-2 italic uppercase">LOGIN</h2>
+      <p class="text-[10px] text-gray-400 mb-5 uppercase tracking-widest font-bold">Admin / Walas / Sekre / Piket</p>
+
+      <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-3">
+        <option value="admin">ADMIN</option>
+        <option value="walas">WALAS</option>
+        <option value="sekre">SEKRETARIS</option>
+        <option value="piket">PIKET</option>
+      </select>
+
+      <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-center text-base mb-4">
+
+      <button onclick="doLogin()" class="w-full py-4 bg-cyan-600 text-white font-black rounded-2xl shadow-lg uppercase text-xs tracking-widest">
+        Masuk
+      </button>
+
+      <button onclick="closeLogin()" class="mt-4 text-gray-500 text-[10px] uppercase font-bold tracking-widest">Batal</button>
+    </div>
+  </div>
+
+  <main class="max-w-2xl mx-auto px-4 space-y-6">
+
+    <!-- ADMIN TAB -->
+    <section id="tab-admin" class="space-y-6">
+
+      <!-- Admin control: class picker (admin/piket only) -->
+      <div class="glass p-6 rounded-[2rem]">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-widest italic text-white">Kontrol</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Pilih kelas & atur jam (admin)</p>
+          </div>
+
+          <select id="select-scope-class" class="bg-gray-900 border border-gray-700 px-4 py-3 rounded-2xl text-sm text-white outline-none hidden" onchange="setScopeClass(this.value)">
+          </select>
         </div>
-    </div>
 
-    <div id="modal-login" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] flex items-center justify-center p-4">
-        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
-            <h2 class="text-xl font-bold text-white mb-6 italic uppercase tracking-widest">PILIH AKSES LOGIN</h2>
-            <div class="space-y-3">
-                <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-2">
-                    <option value="sekretaris">SEKRETARIS KELAS</option>
-                    <option value="piket">GURU PIKET</option>
-                    <option value="guru">GURU / WALAS</option>
-                    <option value="admin">ADMIN SISTEM</option>
-                </select>
-                <input type="text" id="login-user" placeholder="Username / Kelas (Contoh: X-1)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white focus:border-cyan-500 text-center text-sm">
-                <button onclick="prosesLoginMulti()" class="w-full py-4 bg-cyan-600 text-white font-bold rounded-2xl shadow-lg uppercase text-xs mt-4">MASUK</button>
-            </div>
+        <!-- Settings (admin only) -->
+        <div id="admin-settings" class="hidden mt-5 grid grid-cols-2 gap-3">
+          <div class="glass p-4 rounded-2xl border border-gray-800">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam Masuk</div>
+            <input id="set-jamMasuk" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="06:30">
+          </div>
+          <div class="glass p-4 rounded-2xl border border-gray-800">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Batas Telat</div>
+            <input id="set-batasTelat" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="07:00">
+          </div>
+          <div class="glass p-4 rounded-2xl border border-gray-800">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam ALPA</div>
+            <input id="set-jamAlpa" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="09:00">
+          </div>
+          <div class="glass p-4 rounded-2xl border border-gray-800">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam Pulang</div>
+            <input id="set-jamPulang" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="15:00">
+          </div>
+
+          <button onclick="saveSettings()" class="col-span-2 mt-1 py-4 bg-emerald-600 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
+            💾 Simpan Setting Jam
+          </button>
         </div>
-    </div>
+      </div>
 
-    <div id="modal-izin" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden items-center justify-center p-4">
-        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-orange-500/30 text-center">
-            <h2 class="text-xl font-bold text-white mb-4 italic">INPUT IZIN SISWA</h2>
-            <p id="nama-siswa-izin" class="text-cyan-400 font-bold mb-6 uppercase"></p>
-            <div class="grid gap-3">
-                <button onclick="updateStatusIzin('IZIN SAKIT')" class="py-4 bg-red-900/40 text-red-400 border border-red-500/20 rounded-2xl font-bold text-xs uppercase">🤒 Sakit / Pulang</button>
-                <button onclick="updateStatusIzin('PULANG CEPAT')" class="py-4 bg-orange-900/40 text-orange-400 border border-orange-500/20 rounded-2xl font-bold text-xs uppercase">🏠 Pulang Cepat</button>
-                <button onclick="updateStatusIzin('DISPENSASI')" class="py-4 bg-blue-900/40 text-blue-400 border border-blue-500/20 rounded-2xl font-bold text-xs uppercase">🏆 Dispensasi</button>
-                <button onclick="tutupModalIzin()" class="mt-4 text-gray-500 text-[10px] uppercase font-bold italic">Batal</button>
-            </div>
+      <!-- QR + Register -->
+      <div class="glass p-8 rounded-[2.5rem]">
+        <h2 class="text-sm font-black mb-6 text-white uppercase tracking-widest italic">Pendaftaran Murid</h2>
+        <div class="grid gap-4">
+          <input type="text" id="input-nama" placeholder="Nama Lengkap" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white focus:border-cyan-500">
+          <div class="flex gap-4">
+            <select id="select-kelas-admin" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm"></select>
+            <input type="number" id="input-absen" placeholder="No. Absen" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white">
+          </div>
+          <div class="flex gap-4">
+            <select id="select-jk" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
+              <option value="L">LAKI-LAKI</option>
+              <option value="P">PEREMPUAN</option>
+            </select>
+            <select id="select-agama" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
+              <option value="Islam">ISLAM</option>
+              <option value="Kristen">KRISTEN</option>
+            </select>
+          </div>
+          <button onclick="buatQR()" id="btn-generate" class="bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest mt-2 active:scale-95 transition-all">
+            Generate & Simpan
+          </button>
         </div>
+      </div>
+
+      <div id="qr-result-area" class="flex flex-col items-center"></div>
+
+      <!-- Bulk -->
+      <div id="bulk-area" class="hidden glass p-8 rounded-[2.5rem] border border-yellow-500/20">
+        <h2 class="text-sm font-black mb-2 text-yellow-500 uppercase italic">Bulk Daftar Murid</h2>
+        <p class="text-[9px] text-gray-500 mb-4 uppercase font-bold tracking-widest italic">Format: Nama [spasi] Absen [spasi] JK (L/P) [spasi] Agama</p>
+        <textarea id="bulk-input" rows="4" placeholder="ASEP 1 L Islam&#10;SITI 2 P Islam" class="w-full bg-black/40 border border-gray-800 p-5 rounded-2xl text-xs text-white mb-4 outline-none"></textarea>
+        <button onclick="prosesBulkQR()" id="btn-bulk" class="w-full py-4 bg-yellow-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest">
+          🚀 Download ZIP & Simpan
+        </button>
+      </div>
+    </section>
+
+    <!-- SCAN TAB -->
+    <section id="tab-scan" class="hidden space-y-6">
+
+      <!-- Action bar: izin/sakit (walas/sekre/admin), piket events -->
+      <div class="glass p-6 rounded-[2rem]">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-widest italic text-white">Aksi Cepat</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Izin/Sakit & Piket</p>
+          </div>
+          <button onclick="openManualModal()" class="px-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white text-[10px] font-black uppercase tracking-widest">
+            ✍️ Manual
+          </button>
+        </div>
+      </div>
+
+      <!-- Scanner -->
+      <div class="flex gap-3">
+        <button id="btn-start-cam" onclick="startScanner()" class="flex-1 py-5 bg-cyan-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">📷 Aktifkan Kamera</button>
+        <button id="btn-stop-cam" onclick="stopScanner()" class="hidden flex-1 py-5 bg-red-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">🛑 Matikan</button>
+      </div>
+
+      <div class="glass p-5 rounded-[3rem] border-2 border-cyan-500/10 relative min-h-[300px] flex items-center justify-center overflow-hidden">
+        <div id="reader" class="w-full rounded-[2rem]"></div>
+        <div id="scan-feedback" class="absolute inset-0 flex items-center justify-center rounded-[3rem] hidden z-10">
+          <div id="feedback-content" class="text-center text-white p-10 rounded-[3rem] shadow-2xl border border-white/20 bg-black/50">
+            <div id="check-icons" class="text-6xl mb-3"></div>
+            <p id="scanned-name" class="text-2xl font-black uppercase tracking-tighter mb-1"></p>
+            <p id="scanned-info" class="text-[10px] opacity-90 font-bold uppercase"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report -->
+      <div class="glass p-6 rounded-[2.5rem]">
+        <button onclick="downloadZipLaporan()" id="btn-zip-laporan" class="w-full py-5 bg-green-700 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl">
+          📦 Download Rekap Harian (ZIP)
+        </button>
+        <div id="log-list" class="mt-8 space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Manual Modal -->
+  <div id="modal-manual" class="fixed inset-0 bg-black/90 z-[999] hidden items-center justify-center p-4">
+    <div class="glass w-full max-w-md p-6 rounded-[2rem] border border-cyan-500/20">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-black uppercase tracking-widest text-white italic">Manual Update</h3>
+        <button onclick="closeManualModal()" class="text-gray-400 font-black text-xl">✕</button>
+      </div>
+      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2">
+        Cari siswa lalu set status/event.
+      </p>
+
+      <div class="grid gap-3 mt-5">
+        <input id="manual-query" placeholder="Cari: nama / absen" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white">
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="manualSetStatus('IZIN')" class="py-4 rounded-2xl bg-yellow-600 font-black text-xs uppercase tracking-widest">IZIN</button>
+          <button onclick="manualSetStatus('SAKIT')" class="py-4 rounded-2xl bg-indigo-600 font-black text-xs uppercase tracking-widest">SAKIT</button>
+          <button onclick="manualSetStatus('ALPA')" class="py-4 rounded-2xl bg-red-700 font-black text-xs uppercase tracking-widest">ALPA</button>
+          <button onclick="manualSetStatus('HADIR')" class="py-4 rounded-2xl bg-emerald-600 font-black text-xs uppercase tracking-widest">HADIR</button>
+        </div>
+
+        <div id="piket-actions" class="hidden grid grid-cols-2 gap-3">
+          <button onclick="manualSetEvent('DISPEN')" class="py-4 rounded-2xl bg-sky-700 font-black text-xs uppercase tracking-widest">DISPEN</button>
+          <button onclick="manualSetEvent('PULANG_CEPAT')" class="py-4 rounded-2xl bg-fuchsia-700 font-black text-xs uppercase tracking-widest">PULANG CEPAT</button>
+        </div>
+
+        <textarea id="manual-note" rows="2" placeholder="Catatan (opsional)" class="w-full bg-black/40 border border-gray-700 p-4 rounded-2xl text-xs text-white outline-none"></textarea>
+
+        <button onclick="closeManualModal()" class="py-4 rounded-2xl bg-gray-900 border border-gray-700 font-black text-xs uppercase tracking-widest">
+          Selesai
+        </button>
+      </div>
     </div>
+  </div>
 
-    <main class="max-w-2xl mx-auto px-4">
-        <section id="tab-admin" class="space-y-6">
-            <div class="glass p-8 rounded-[2.5rem]">
-                <h2 class="text-sm font-black mb-6 text-white uppercase tracking-widest italic">Pendaftaran Murid</h2>
-                <div class="grid gap-4">
-                    <input type="text" id="input-nama" placeholder="Nama Lengkap" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white focus:border-cyan-500">
-                    <div class="flex gap-4">
-                        <select id="select-kelas-admin" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm"></select>
-                        <input type="number" id="input-nis" placeholder="No. Absen" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white">
-                    </div>
-                    <div class="flex gap-4">
-                        <select id="select-jk" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
-                            <option value="L">LAKI-LAKI</option>
-                            <option value="P">PEREMPUAN</option>
-                        </select>
-                        <select id="select-agama" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
-                            <option value="Islam">ISLAM</option>
-                            <option value="Kristen">KRISTEN</option>
-                        </select>
-                    </div>
-                    <button onclick="buatQR()" class="bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest mt-2 active:scale-95 transition-all">Generate & Simpan</button>
-                </div>
+  <div id="hidden-qr-engine" style="position:absolute; left:-9999px; top:0;"></div>
+
+  <script>
+    // =============================
+    //  CONFIG (edit sesuai kamu)
+    // =============================
+    const GITHUB_TOKEN = "PASTE_TOKEN_KAMU_DI_SINI";
+    const GIST_ID_UTAMA = "PASTE_GIST_ID_KAMU_DI_SINI";
+
+    // =============================
+    //  STATE
+    // =============================
+    let config = null;
+    let localDB = {}; // { "X-1": [...], "X-2": [...] }
+    let currentRole = null;      // admin | walas | sekre | piket
+    let kelasScope = null;       // "X-1" / "X-2" untuk walas/sekre, null untuk admin/piket
+    let selectedClass = "X-1";   // untuk admin/piket memilih kelas
+    let html5QrScanner = null;
+
+    // =============================
+    //  UTILS
+    // =============================
+    function todayStr() {
+      return new Date().toLocaleDateString('id-ID');
+    }
+    function nowTimeStr() {
+      return new Date().toLocaleTimeString('id-ID');
+    }
+    function timeToMin(t){
+      const [h,m] = String(t).split(':').map(Number);
+      return (h*60) + (m||0);
+    }
+    function nowMin(){
+      const d=new Date();
+      return d.getHours()*60 + d.getMinutes();
+    }
+
+    function canSeeAllClasses() {
+      return currentRole === "admin" || currentRole === "piket";
+    }
+    function activeClass() {
+      // Walas/Sekre fixed class, Admin/Piket uses selectedClass
+      return canSeeAllClasses() ? selectedClass : kelasScope;
+    }
+
+    // =============================
+    //  GIST LOAD/SAVE
+    // =============================
+    async function fetchGist() {
+      const res = await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}?t=${Date.now()}`);
+      return await res.json();
+    }
+    async function patchGist(filesObj) {
+      await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}`, {
+        method: "PATCH",
+        headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type":"application/json" },
+        body: JSON.stringify({ files: filesObj })
+      });
+    }
+
+    async function loadAll() {
+      const gist = await fetchGist();
+
+      // config
+      config = gist.files["config.json"] ? JSON.parse(gist.files["config.json"].content) : null;
+      if (!config) throw new Error("config.json tidak ditemukan di gist");
+
+      // load classes
+      for (const cls of config.classes) {
+        const fn = `${cls}.json`;
+        localDB[cls] = gist.files[fn] ? JSON.parse(gist.files[fn].content) : [];
+      }
+    }
+
+    async function saveClass(cls) {
+      const fn = `${cls}.json`;
+      await patchGist({ [fn]: { content: JSON.stringify(localDB[cls], null, 2) } });
+    }
+
+    async function saveConfig() {
+      await patchGist({ ["config.json"]: { content: JSON.stringify(config, null, 2) } });
+    }
+
+    // =============================
+    //  AUTH
+    // =============================
+    function openLogin() {
+      const m = document.getElementById("modal-login");
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+    }
+    function closeLogin() {
+      const m = document.getElementById("modal-login");
+      m.classList.add("hidden");
+      m.classList.remove("flex");
+    }
+
+    function setBadges() {
+      const bRole = document.getElementById("badge-role");
+      const bScope = document.getElementById("badge-scope");
+
+      bRole.classList.remove("hidden");
+      bScope.classList.remove("hidden");
+
+      bRole.textContent = `ROLE: ${currentRole?.toUpperCase() || "-"}`;
+
+      const cls = activeClass();
+      bScope.textContent = `KELAS: ${cls || "SEMUA"}`;
+    }
+
+    function logout() {
+      localStorage.removeItem("role");
+      localStorage.removeItem("kelasScope");
+      localStorage.removeItem("loginOk");
+      location.reload();
+    }
+
+    function restoreSession() {
+      const ok = localStorage.getItem("loginOk") === "1";
+      if (!ok) return false;
+      currentRole = localStorage.getItem("role");
+      kelasScope = localStorage.getItem("kelasScope");
+      return !!currentRole;
+    }
+
+    function doLogin() {
+      const role = document.getElementById("login-role").value;
+      const pass = document.getElementById("login-pass").value.trim();
+
+      if (!config) return alert("Config belum kebaca");
+
+      // admin
+      if (role === "admin") {
+        if (pass !== config.accounts.admin.pass) return alert("Password Admin salah");
+        currentRole = "admin";
+        kelasScope = null;
+      }
+
+      // piket
+      if (role === "piket") {
+        if (pass !== config.accounts.piket.pass) return alert("Password Piket salah");
+        currentRole = "piket";
+        kelasScope = null;
+      }
+
+      // walas per kelas
+      if (role === "walas") {
+        const walas = config.accounts.walas;
+        const found = Object.keys(walas).find(kls => walas[kls].pass === pass);
+        if (!found) return alert("Password Walas salah");
+        currentRole = "walas";
+        kelasScope = found;
+      }
+
+      // sekre per kelas
+      if (role === "sekre") {
+        const sekre = config.accounts.sekre;
+        const found = Object.keys(sekre).find(kls => sekre[kls].pass === pass);
+        if (!found) return alert("Password Sekretaris salah");
+        currentRole = "sekre";
+        kelasScope = found;
+      }
+
+      localStorage.setItem("loginOk","1");
+      localStorage.setItem("role", currentRole);
+      localStorage.setItem("kelasScope", kelasScope || "");
+
+      closeLogin();
+      setupRoleUI();
+      setBadges();
+      document.getElementById("btn-logout").classList.remove("hidden");
+
+      // langsung ke scan untuk walas/sekre/piket
+      if (currentRole !== "admin") switchTab("scan");
+    }
+
+    // =============================
+    //  UI ROLE CONTROL
+    // =============================
+    function setupRoleUI() {
+      // admin tab button only for admin
+      const btnAdminTab = document.getElementById("btn-admin");
+      if (currentRole === "admin") {
+        btnAdminTab.classList.remove("hidden");
+      } else {
+        // non-admin: admin tab masih ada tapi isinya dibatasi (biar simpel)
+        // kalau mau bener2 hidden: btnAdminTab.classList.add("hidden");
+      }
+
+      // bulk area & generate only admin
+      document.getElementById("bulk-area").classList.toggle("hidden", currentRole !== "admin");
+      document.getElementById("btn-generate").disabled = (currentRole !== "admin");
+      document.getElementById("btn-generate").classList.toggle("opacity-50", currentRole !== "admin");
+
+      // settings only admin
+      document.getElementById("admin-settings").classList.toggle("hidden", currentRole !== "admin");
+
+      // class selector for admin/piket
+      const selScope = document.getElementById("select-scope-class");
+      selScope.innerHTML = "";
+      for (const cls of config.classes) {
+        selScope.innerHTML += `<option value="${cls}">${cls}</option>`;
+      }
+      selScope.classList.toggle("hidden", !canSeeAllClasses());
+      if (!canSeeAllClasses()) {
+        // set selectedClass to scope
+        selectedClass = kelasScope || config.classes[0];
+      } else {
+        selectedClass = config.classes[0];
+      }
+
+      // fill admin register class select
+      const selAdmin = document.getElementById("select-kelas-admin");
+      selAdmin.innerHTML = "";
+      for (const cls of config.classes) selAdmin.innerHTML += `<option value="${cls}">${cls}</option>`;
+      selAdmin.disabled = (currentRole !== "admin");
+      selAdmin.classList.toggle("opacity-50", currentRole !== "admin");
+
+      // piket actions in manual modal
+      document.getElementById("piket-actions").classList.toggle("hidden", currentRole !== "piket" && currentRole !== "admin");
+
+      // set settings inputs from config
+      if (currentRole === "admin") {
+        document.getElementById("set-jamMasuk").value = config.cutoff.jamMasuk;
+        document.getElementById("set-batasTelat").value = config.cutoff.batasTelat;
+        document.getElementById("set-jamAlpa").value = config.cutoff.jamAlpa;
+        document.getElementById("set-jamPulang").value = config.cutoff.jamPulang;
+      }
+
+      setBadges();
+      renderLog();
+    }
+
+    function setScopeClass(cls) {
+      selectedClass = cls;
+      setBadges();
+      renderLog();
+    }
+
+    async function saveSettings() {
+      if (currentRole !== "admin") return alert("Hanya admin");
+      const jm = document.getElementById("set-jamMasuk").value.trim();
+      const bt = document.getElementById("set-batasTelat").value.trim();
+      const ja = document.getElementById("set-jamAlpa").value.trim();
+      const jp = document.getElementById("set-jamPulang").value.trim();
+
+      config.cutoff.jamMasuk = jm || config.cutoff.jamMasuk;
+      config.cutoff.batasTelat = bt || config.cutoff.batasTelat;
+      config.cutoff.jamAlpa = ja || config.cutoff.jamAlpa;
+      config.cutoff.jamPulang = jp || config.cutoff.jamPulang;
+
+      await saveConfig();
+      alert("Setting jam tersimpan ✅");
+    }
+
+    // =============================
+    //  TABS
+    // =============================
+    function switchTab(t) {
+      // login gating
+      if (!currentRole) { openLogin(); return; }
+
+      document.getElementById("tab-admin").classList.toggle("hidden", t !== "admin");
+      document.getElementById("tab-scan").classList.toggle("hidden", t !== "scan");
+      document.getElementById("btn-admin").classList.toggle("active-tab", t === "admin");
+      document.getElementById("btn-scan").classList.toggle("active-tab", t === "scan");
+
+      if (t !== "scan") stopScanner();
+    }
+
+    // =============================
+    //  QR CREATE
+    // =============================
+    async function buatQR() {
+      if (currentRole !== "admin") return alert("Hanya admin boleh generate");
+      const n = document.getElementById('input-nama').value.trim();
+      const k = document.getElementById('select-kelas-admin').value;
+      const a = document.getElementById('input-absen').value.trim();
+      const ag = document.getElementById('select-agama').value;
+      const jk = document.getElementById('select-jk').value;
+
+      if (!n || !a) return alert("Isi nama & absen!");
+      if (localDB[k].some(d => d.Absen === a)) return alert("Absen sudah terdaftar!");
+
+      localDB[k].push({
+        Nama: n, Kelas: k, Absen: a, JK: jk, Agama: ag,
+        Jam: "-", Tanggal: "-", Status: "-",
+        Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Terlambat: 0,
+        Dispen: 0, PulangCepat: 0, Catatan: "-"
+      });
+
+      await saveClass(k);
+
+      const area = document.getElementById('qr-result-area');
+      area.innerHTML = `
+        <div id="qrd" class="p-8 bg-white rounded-[2.5rem] flex flex-col items-center mt-4 w-full max-w-[360px]">
+          <div id="qri" class="mb-4"></div>
+          <b class="text-black uppercase text-xl text-center">${n}</b>
+          <p class="text-gray-600 font-bold uppercase text-[10px] text-center">${k} • ${jk} • ${ag} • ABSEN ${a}</p>
+        </div>
+        <button onclick="downloadQR('${n}')" class="mt-3 bg-cyan-600 p-4 w-full max-w-[360px] rounded-2xl font-black italic text-white text-xs uppercase">
+          💾 Simpan Kartu
+        </button>`;
+
+      // payload: nama|kelas|absen|jk|agama
+      new QRCode(document.getElementById("qri"), {
+        text: `${n}|${k}|${a}|${jk}|${ag}`,
+        width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function downloadQR(n) {
+      html2canvas(document.getElementById('qrd'), {scale: 3}).then(c => {
+        const l = document.createElement('a');
+        l.href = c.toDataURL();
+        l.download = `QR_${n}.png`;
+        l.click();
+      });
+    }
+
+    // =============================
+    //  SCANNER
+    // =============================
+    function startScanner() {
+      if (!currentRole) { openLogin(); return; }
+      document.getElementById('btn-start-cam').classList.add('hidden');
+      document.getElementById('btn-stop-cam').classList.remove('hidden');
+
+      if (html5QrScanner) {
+        html5QrScanner.start(
+          { facingMode: "environment" },
+          { fps: 20, qrbox: 250 },
+          (text) => prosesScan(text)
+        );
+      } else {
+        html5QrScanner = new Html5Qrcode("reader");
+        startScanner();
+      }
+    }
+    async function stopScanner() {
+      try {
+        if (html5QrScanner && html5QrScanner.isScanning) await html5QrScanner.stop();
+      } catch (e) {}
+      document.getElementById('btn-start-cam').classList.remove('hidden');
+      document.getElementById('btn-stop-cam').classList.add('hidden');
+    }
+
+    // =============================
+    //  ABSEN LOGIC (HADIR / TELAT)
+    // =============================
+    async function prosesScan(text) {
+      const parts = text.split('|');
+      if (parts.length < 5) return;
+
+      const [nama, kelas, absen] = parts;
+      const cls = kelas;
+
+      // scope check
+      if (!canSeeAllClasses() && cls !== kelasScope) {
+        return showFeedback("❌", nama, `SALAH KELAS! (${cls})`, "bg-red-700");
+      }
+
+      const today = todayStr();
+      const now = new Date();
+      const batasTelat = timeToMin(config.cutoff.batasTelat);
+      const stat = (nowMin() > batasTelat) ? "TERLAMBAT" : "HADIR";
+
+      const idx = localDB[cls].findIndex(s => s.Absen === absen);
+      if (idx === -1) return showFeedback("❌", nama, "DATA TIDAK ADA", "bg-red-700");
+
+      // already today?
+      if (localDB[cls][idx].Tanggal === today && localDB[cls][idx].Status !== "-") {
+        return showFeedback("⚠️", nama, "SUDAH ABSEN HARI INI", "bg-yellow-600");
+      }
+
+      // set
+      localDB[cls][idx].Tanggal = today;
+      localDB[cls][idx].Jam = now.toLocaleTimeString('id-ID');
+      localDB[cls][idx].Status = stat;
+      localDB[cls][idx].Catatan = "-";
+
+      if (stat === "HADIR") localDB[cls][idx].Hadir = (parseInt(localDB[cls][idx].Hadir)||0)+1;
+      if (stat === "TERLAMBAT") localDB[cls][idx].Terlambat = (parseInt(localDB[cls][idx].Terlambat)||0)+1;
+
+      await saveClass(cls);
+      renderLog();
+
+      showFeedback("✅", nama, `${stat} TERCATAT`, "bg-emerald-600");
+
+      // auto cutoff check after each scan
+      await autoCutoffAlpaIfNeeded();
+    }
+
+    function showFeedback(icon, nama, info, bgClass) {
+      const fb = document.getElementById('scan-feedback');
+      document.getElementById('check-icons').innerText = icon;
+      document.getElementById('scanned-name').innerText = nama;
+      document.getElementById('scanned-info').innerText = info;
+      document.getElementById('feedback-content').className =
+        `text-center text-white p-10 rounded-[3rem] shadow-2xl ${bgClass} border border-white/20`;
+      fb.classList.remove('hidden');
+      setTimeout(() => fb.classList.add('hidden'), 1800);
+    }
+
+    // =============================
+    //  AUTO CUTOFF ALPA (jalan saat web kebuka)
+    // =============================
+    async function autoCutoffAlpaIfNeeded() {
+      const cutoffMin = timeToMin(config.cutoff.jamAlpa);
+      if (nowMin() < cutoffMin) return;
+
+      const today = todayStr();
+      const flagKey = `cutoff_done_${today}`;
+
+      // sekali per hari per device
+      if (localStorage.getItem(flagKey) === "1") return;
+
+      let changed = 0;
+      for (const cls of config.classes) {
+        // scope: kalau walas/sekre cuma kelasnya
+        if (!canSeeAllClasses() && cls !== kelasScope) continue;
+
+        localDB[cls] = localDB[cls].map(s => {
+          // kalau sudah ada status hari ini (HADIR/TERLAMBAT/IZIN/SAKIT/DISPEN dll) skip
+          const sudahHariIni = (s.Tanggal === today && s.Status && s.Status !== "-");
+          if (sudahHariIni) return s;
+
+          // jadi ALPA
+          s.Tanggal = today;
+          s.Jam = "-";
+          s.Status = "ALPA";
+          s.Alpa = (parseInt(s.Alpa)||0)+1;
+          changed++;
+          return s;
+        });
+
+        await saveClass(cls);
+      }
+
+      localStorage.setItem(flagKey, "1");
+      if (changed > 0) renderLog();
+    }
+
+    // =============================
+    //  MANUAL (IZIN/SAKIT/HADIR/ALPA + EVENT PIKET)
+    // =============================
+    function openManualModal() {
+      if (!currentRole) { openLogin(); return; }
+      const m = document.getElementById("modal-manual");
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+      document.getElementById("manual-query").value = "";
+      document.getElementById("manual-note").value = "";
+    }
+    function closeManualModal() {
+      const m = document.getElementById("modal-manual");
+      m.classList.add("hidden");
+      m.classList.remove("flex");
+    }
+
+    function findStudentByQuery(cls, q) {
+      q = String(q||"").trim().toLowerCase();
+      if (!q) return -1;
+      // absen exact
+      let idx = localDB[cls].findIndex(s => String(s.Absen) === q);
+      if (idx !== -1) return idx;
+      // name contains
+      idx = localDB[cls].findIndex(s => String(s.Nama||"").toLowerCase().includes(q));
+      return idx;
+    }
+
+    async function manualSetStatus(status) {
+      // allowed: admin, walas, sekre. piket juga boleh set ALPA? kita kunci, piket fokus event
+      if (!(currentRole === "admin" || currentRole === "walas" || currentRole === "sekre")) {
+        return alert("Role kamu bukan untuk set status utama.");
+      }
+
+      const cls = activeClass();
+      const q = document.getElementById("manual-query").value;
+      const note = document.getElementById("manual-note").value.trim() || "-";
+      const idx = findStudentByQuery(cls, q);
+      if (idx === -1) return alert("Siswa tidak ketemu di kelas " + cls);
+
+      const today = todayStr();
+
+      // update main status
+      localDB[cls][idx].Tanggal = today;
+      localDB[cls][idx].Jam = (status === "HADIR") ? nowTimeStr() : "-";
+      localDB[cls][idx].Status = status;
+      localDB[cls][idx].Catatan = note;
+
+      // increment counters (simple version)
+      if (status === "IZIN") localDB[cls][idx].Izin = (parseInt(localDB[cls][idx].Izin)||0)+1;
+      if (status === "SAKIT") localDB[cls][idx].Sakit = (parseInt(localDB[cls][idx].Sakit)||0)+1;
+      if (status === "ALPA") localDB[cls][idx].Alpa = (parseInt(localDB[cls][idx].Alpa)||0)+1;
+      if (status === "HADIR") localDB[cls][idx].Hadir = (parseInt(localDB[cls][idx].Hadir)||0)+1;
+
+      await saveClass(cls);
+      renderLog();
+      alert(`✅ ${localDB[cls][idx].Nama} → ${status}`);
+    }
+
+    async function manualSetEvent(ev) {
+      // allowed: admin & piket
+      if (!(currentRole === "admin" || currentRole === "piket")) return alert("Hanya Piket/Admin");
+      const cls = activeClass(); // piket/admin pilih class via selector
+      const q = document.getElementById("manual-query").value;
+      const note = document.getElementById("manual-note").value.trim() || "-";
+      const idx = findStudentByQuery(cls, q);
+      if (idx === -1) return alert("Siswa tidak ketemu di kelas " + cls);
+
+      const today = todayStr();
+
+      // event doesn't override main status, but we store on Catatan + counters
+      localDB[cls][idx].Tanggal = (localDB[cls][idx].Tanggal === "-" ? today : localDB[cls][idx].Tanggal);
+      localDB[cls][idx].Catatan = `${ev} @${nowTimeStr()} | ${note}`;
+
+      if (ev === "DISPEN") localDB[cls][idx].Dispen = (parseInt(localDB[cls][idx].Dispen)||0)+1;
+      if (ev === "PULANG_CEPAT") localDB[cls][idx].PulangCepat = (parseInt(localDB[cls][idx].PulangCepat)||0)+1;
+
+      await saveClass(cls);
+      renderLog();
+      alert(`🛡️ ${localDB[cls][idx].Nama} → ${ev}`);
+    }
+
+    // =============================
+    //  LOG VIEW (kelas scope)
+    // =============================
+    function renderLog() {
+      const cls = activeClass();
+      const list = document.getElementById('log-list');
+      if (!cls) { list.innerHTML = ""; return; }
+
+      const today = todayStr();
+      const rows = (localDB[cls] || [])
+        .filter(s => s.Tanggal === today && s.Status && s.Status !== "-")
+        .sort((a,b) => String(b.Jam||"").localeCompare(String(a.Jam||"")));
+
+      list.innerHTML = rows.length === 0
+        ? `<p class="text-center text-gray-600 py-10 italic text-[10px] uppercase">Belum ada data hari ini...</p>`
+        : rows.slice(0, 40).map(s => `
+          <div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500">
+            <div>
+              <b class="text-white text-xs uppercase">${s.Nama}</b>
+              <div class="text-[9px] text-gray-400 uppercase font-bold tracking-widest mt-1">
+                ABSEN ${s.Absen} • ${s.Status} • ${s.Jam} • ${cls}
+              </div>
+              ${s.Catatan && s.Catatan !== "-" ? `<div class="text-[10px] text-gray-500 mt-1">${s.Catatan}</div>` : ""}
             </div>
-            <div id="qr-result-area" class="flex flex-col items-center"></div>
+            <div class="bg-gray-900 px-3 py-2 rounded-xl text-cyan-300 font-black text-[10px] uppercase">${s.Status}</div>
+          </div>
+        `).join('');
+    }
 
-            <div id="bulk-area-guru" class="hidden glass p-8 rounded-[2.5rem] border border-yellow-500/20">
-                <h2 class="text-sm font-black mb-2 text-yellow-500 uppercase italic">Bulk Daftar Murid</h2>
-                <p class="text-[8px] text-gray-500 mb-4 uppercase font-bold tracking-widest italic">Format: Nama [Spasi] Absen [Spasi] JK (L/P) [Spasi] Agama</p>
-                <textarea id="bulk-input" rows="4" placeholder="ASEP 1 L Islam&#10;SITI 2 P Islam" class="w-full bg-black/40 border border-gray-800 p-5 rounded-2xl text-xs text-white mb-4 outline-none"></textarea>
-                <button onclick="prosesBulkQR()" id="btn-bulk" class="w-full py-4 bg-yellow-600 text-white font-bold rounded-2xl text-[10px] uppercase tracking-widest">🚀 Download ZIP & Simpan</button>
+    // =============================
+    //  ZIP REPORT (scope)
+    // =============================
+    async function downloadZipLaporan() {
+      const btn = document.getElementById('btn-zip-laporan');
+      btn.innerText = "⏳ PROCESSING..."; btn.disabled = true;
+
+      // apply cutoff before export (biar ALPA keisi dulu)
+      await autoCutoffAlpaIfNeeded();
+
+      const zip = new JSZip();
+      const today = todayStr();
+
+      const classesToExport = canSeeAllClasses() ? config.classes : [kelasScope];
+
+      for (const cls of classesToExport) {
+        if (!localDB[cls] || localDB[cls].length === 0) continue;
+
+        // sort by absen
+        const sorted = [...localDB[cls]].sort((a,b) => parseInt(a.Absen)-parseInt(b.Absen));
+        const dataExcel = sorted.map(s => {
+          const isToday = s.Tanggal === today;
+          const status = isToday ? (s.Status || "-") : "ALPA";
+          const jam = isToday ? (s.Jam || "-") : "-";
+          return {
+            "ABSEN": s.Absen,
+            "NAMA": String(s.Nama||"").toUpperCase(),
+            "JK": s.JK || "-",
+            "AGAMA": s.Agama || "-",
+            "STATUS": status,
+            "JAM": jam,
+            "CATATAN": s.Catatan || "-"
+          };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(dataExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "REKAP");
+        zip.file(`REKAP_${cls}_${today.replace(/\//g,'-')}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
+      }
+
+      const content = await zip.generateAsync({type:"blob"});
+      const l = document.createElement('a');
+      l.href = URL.createObjectURL(content);
+      l.download = `REKAP_${today.replace(/\//g,'-')}.zip`;
+      l.click();
+
+      btn.innerText = "📦 Download Rekap Harian (ZIP)";
+      btn.disabled = false;
+    }
+
+    // =============================
+    //  BULK (admin)
+    // =============================
+    async function prosesBulkQR() {
+      if (currentRole !== "admin") return alert("Hanya admin");
+      const input = document.getElementById('bulk-input').value.trim();
+      const k = document.getElementById('select-kelas-admin').value;
+      if (!input) return;
+
+      const zip = new JSZip();
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      const lines = input.split('\n');
+
+      for (let i=0;i<lines.length;i++) {
+        const p = lines[i].trim().split(' ');
+        const agama = p.pop(); const jk = p.pop(); const absen = p.pop();
+        const nama = p.join(' ');
+        if (!nama || isNaN(absen)) continue;
+
+        if (!localDB[k].some(d => d.Absen === absen)) {
+          localDB[k].push({
+            Nama: nama, Kelas: k, Absen: String(absen), JK: jk, Agama: agama,
+            Jam: "-", Tanggal: "-", Status: "-",
+            Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Terlambat: 0,
+            Dispen: 0, PulangCepat: 0, Catatan: "-"
+          });
+        }
+
+        const engine = document.getElementById('hidden-qr-engine');
+        engine.innerHTML = `
+          <div id="tmp-card" style="padding:40px;background:white;width:360px;text-align:center">
+            <div id="tmp-img" style="display:flex;justify-content:center"></div>
+            <div style="margin-top:18px">
+              <b style="color:black;font-size:24px;text-transform:uppercase">${nama}</b>
+              <p style="color:#666;font-weight:bold;font-size:12px">${k} - ${jk} - ${agama} - ABSEN ${absen}</p>
             </div>
-        </section>
+          </div>`;
 
-        <section id="tab-scan" class="hidden space-y-6">
-            <div class="glass p-2 rounded-[2rem] flex gap-2">
-                <button onclick="setMode('Islam')" id="mode-islam" class="flex-1 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border border-gray-800 text-gray-500 transition-all active-mode-islam">☪️ Mode Islam</button>
-                <button onclick="setMode('Kristen')" id="mode-kristen" class="flex-1 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border border-gray-800 text-gray-500 transition-all">✝️ Mode Kristen</button>
-            </div>
+        new QRCode(document.getElementById("tmp-img"), {
+          text: `${nama}|${k}|${absen}|${jk}|${agama}`,
+          width: 240, height: 240
+        });
 
-            <div class="flex gap-3">
-                <button id="btn-start-cam" onclick="startScanner()" class="flex-1 py-5 bg-cyan-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">📷 Aktifkan Kamera</button>
-                <button id="btn-stop-cam" onclick="stopScanner()" class="hidden flex-1 py-5 bg-red-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">🛑 Matikan</button>
-            </div>
+        await new Promise(r => setTimeout(r, 200));
+        const canvas = await html2canvas(document.getElementById('tmp-card'), {scale: 2});
+        zip.file(`${k}/QR_${absen}_${nama}.png`, canvas.toDataURL("image/png").split(',')[1], {base64:true});
+      }
 
-            <div class="glass p-5 rounded-[3rem] border-2 border-cyan-500/10 relative min-h-[300px] flex items-center justify-center overflow-hidden">
-                <div id="reader" class="w-full rounded-[2rem]"></div>
-                <div id="scan-feedback" class="absolute inset-0 flex items-center justify-center rounded-[3rem] hidden z-10">
-                    <div id="feedback-content" class="text-center text-white p-10 rounded-[3rem] shadow-2xl">
-                        <div id="check-icons" class="text-6xl mb-3"></div>
-                        <p id="scanned-name" class="text-2xl font-black uppercase tracking-tighter mb-1"></p>
-                        <p id="scanned-info" class="text-[10px] opacity-80 font-bold uppercase"></p>
-                    </div>
-                </div>
-            </div>
+      await saveClass(k);
 
-            <div class="glass p-6 rounded-[2.5rem]">
-                <button onclick="downloadZipLaporan()" id="btn-zip-laporan" class="w-full py-5 bg-green-700 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl">📦 Download Rekap Harian (ZIP)</button>
-                <div id="log-list" class="mt-8 space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
-            </div>
-        </section>
-    </main>
+      const content = await zip.generateAsync({type:"blob"});
+      const l = document.createElement('a');
+      l.href = URL.createObjectURL(content);
+      l.download = `QR_BULK_${k}.zip`;
+      l.click();
 
-    <div id="hidden-qr-engine" style="position: absolute; left: -9999px; top: 0;"></div>
+      document.getElementById('loading-overlay').classList.add('hidden');
+      alert("Bulk sukses ✅");
+    }
 
-    <script>
-        // --- KONFIGURASI ---
-        const PW_LIST = {
-            admin: "admin123",
-            piket: "piket12",
-            sekretaris: { "X-1": "bintangX1", "X-2": "bintangX2", "X-3": "bintangX3" },
-            guru: { "pak-yahya": "yahya123" }
-        }; 
-        const GITHUB_TOKEN = ""; // WAJIB ISI TOKEN
-        const GIST_ID_UTAMA = "8f37fc18c4fb9bd3593486f97919ca9f"; 
-        const DAFTAR_KELAS = ["X-1", "X-2", "X-3", "X-4", "X-5", "X-6", "XI-1", "XI-2", "XI-3", "XI-4", "XI-5", "XI-6", "XII-1", "XII-2", "XII-3", "XII-4", "XII-5", "XII-6"];
-        
-        // --- STATE ---
-        let currentRole = null;
-        let currentIdent = null;
-        let isGuruLoggedIn = false;
-        let localDB = {}; 
-        let currentMode = 'Islam';
-        let html5QrScanner;
-        let tempIzinData = null;
+    // =============================
+    //  INIT
+    // =============================
+    async function init() {
+      try {
+        // restore session if exists
+        restoreSession();
 
-        // --- INIT & PERSISTENCE ---
-        async function init() {
-            const savedRole = localStorage.getItem('userRole');
-            const savedIdent = localStorage.getItem('userIdent');
-            if (savedRole) {
-                currentRole = savedRole; currentIdent = savedIdent; isGuruLoggedIn = true;
-                updateUIAfterLogin(); aturFiturBerdasarkanRole();
-            }
-            const adminSelect = document.getElementById('select-kelas-admin');
-            DAFTAR_KELAS.forEach(cls => { adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`; });
-            await loadAllData();
-            document.getElementById('loading-overlay').classList.add('hidden');
+        await loadAll();
+
+        // fill selects
+        const adminSelect = document.getElementById('select-kelas-admin');
+        adminSelect.innerHTML = "";
+        for (const cls of config.classes) adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+
+        // scope select
+        const selScope = document.getElementById("select-scope-class");
+        selScope.innerHTML = "";
+        for (const cls of config.classes) selScope.innerHTML += `<option value="${cls}">${cls}</option>`;
+        selScope.value = selectedClass;
+
+        // if not logged in, show login modal
+        if (!currentRole) openLogin();
+        else {
+          setupRoleUI();
+          document.getElementById("btn-logout").classList.remove("hidden");
         }
 
-        // --- LOGIN LOGIC ---
-        function prosesLoginMulti() {
-            const role = document.getElementById('login-role').value;
-            const user = document.getElementById('login-user').value.toUpperCase();
-            const pass = document.getElementById('login-pass').value;
-            let sukses = false;
+        // auto cutoff check + interval
+        await autoCutoffAlpaIfNeeded();
+        setInterval(autoCutoffAlpaIfNeeded, 30000);
 
-            if (role === 'admin' && pass === PW_LIST.admin) { sukses = true; currentRole = 'ADMIN'; }
-            else if (role === 'piket' && pass === PW_LIST.piket) { sukses = true; currentRole = 'PIKET'; }
-            else if (role === 'sekretaris' && PW_LIST.sekretaris[user] === pass) { sukses = true; currentRole = 'SEKRETARIS'; currentIdent = user; }
-            else if (role === 'guru' && PW_LIST.guru[user.toLowerCase()] === pass) { sukses = true; currentRole = 'GURU'; currentIdent = user; }
+        document.getElementById('loading-overlay').classList.add('hidden');
 
-            if (sukses) {
-                localStorage.setItem('userRole', currentRole);
-                localStorage.setItem('userIdent', currentIdent || "");
-                isGuruLoggedIn = true; tutupLogin(); updateUIAfterLogin(); aturFiturBerdasarkanRole();
-                alert(`Login Berhasil: ${currentRole}`);
-            } else alert("Akses Ditolak!");
-        }
+      } catch (e) {
+        console.error(e);
+        alert("Gagal init: " + e.message);
+      }
+    }
 
-        function aturFiturBerdasarkanRole() {
-            const bulk = document.getElementById('bulk-area-guru');
-            bulk.classList.add('hidden');
-            if (currentRole === 'ADMIN') switchTab('admin');
-            else if (currentRole === 'GURU') { bulk.classList.remove('hidden'); switchTab('scan'); }
-            else switchTab('scan');
-        }
-
-        function prosesLogout() { 
-            if(confirm("Logout?")) { localStorage.clear(); window.location.reload(); }
-        }
-
-        // --- DATABASE ---
-        async function loadAllData() {
-            try {
-                const res = await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}?t=${new Date().getTime()}`);
-                const data = await res.json();
-                DAFTAR_KELAS.forEach(cls => {
-                    const fileName = `${cls}.json`;
-                    localDB[cls] = data.files[fileName] ? JSON.parse(data.files[fileName].content) : [];
-                });
-                renderLog();
-            } catch (e) { console.error("Database error"); }
-        }
-
-        async function syncToGithub(kelas) {
-            if(!GITHUB_TOKEN) return;
-            const fileName = `${kelas}.json`;
-            await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}`, {
-                method: "PATCH",
-                headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ files: { [fileName]: { content: JSON.stringify(localDB[kelas], null, 2) } } })
-            });
-        }
-
-        // --- ABSENSI & SCAN ---
-        async function prosesAbsen(text) {
-            const [nama, kelas, absen, jk, agama] = text.split('|');
-            const now = new Date(); const today = now.toLocaleDateString('id-ID');
-            if (agama !== currentMode) return showFeedback("❌", nama, "SALAH PINTU!", "bg-red-700");
-            if (localDB[kelas].some(d => d.Absen === absen && d.Tanggal === today)) return showFeedback("⚠️", nama, "SUDAH SCAN!", "bg-yellow-600");
-
-            let idx = localDB[kelas].findIndex(d => d.Absen === absen);
-            if (idx !== -1) {
-                localDB[kelas][idx].Jam = now.toLocaleTimeString('id-ID');
-                localDB[kelas][idx].Tanggal = today;
-                localDB[kelas][idx].Status = currentMode === 'Islam' ? 'DZUHUR' : 'IBADAH';
-                localDB[kelas][idx].KehadiranKe = (parseInt(localDB[kelas][idx].KehadiranKe) || 0) + 1;
-                showFeedback("✅", nama, "BERHASIL", "bg-green-600"); renderLog(); await syncToGithub(kelas);
-            }
-        }
-
-        // --- FITUR GURU PIKET (IZIN) ---
-        function renderLog() {
-            const list = document.getElementById('log-list');
-            const today = new Date().toLocaleDateString('id-ID');
-            let allLogs = [];
-            DAFTAR_KELAS.forEach(cls => { localDB[cls].filter(d => d.Tanggal === today).forEach(d => allLogs.push(d)); });
-            allLogs.sort((a,b) => b.Jam.localeCompare(a.Jam));
-            
-            list.innerHTML = allLogs.length === 0 ? `<p class="text-center py-10 opacity-50 text-xs">Kosong</p>` :
-                allLogs.map(d => `
-                    <div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500 mb-2">
-                        <div><b class="text-white text-xs uppercase">${d.Nama}</b><div class="text-[8px] text-gray-500">${d.Kelas} • ${d.Status} • ${d.Jam}</div></div>
-                        <div class="flex gap-2">
-                            ${currentRole === 'PIKET' || currentRole === 'ADMIN' ? `<button onclick="bukaModalIzin('${d.Nama}', '${d.Kelas}', '${d.Absen}')" class="bg-orange-600/20 text-orange-400 border border-orange-500/30 px-2 py-1 rounded-lg text-[8px] font-black">IZIN</button>` : ''}
-                            <div class="bg-gray-900 px-3 py-1 rounded-lg text-cyan-400 font-black text-[10px]">#${d.KehadiranKe}</div>
-                        </div>
-                    </div>`).join('');
-        }
-
-        function bukaModalIzin(nama, kelas, absen) {
-            tempIzinData = { nama, kelas, absen };
-            document.getElementById('nama-siswa-izin').innerText = nama;
-            document.getElementById('modal-izin').classList.remove('hidden');
-            document.getElementById('modal-izin').classList.add('flex');
-        }
-
-        async function updateStatusIzin(tipe) {
-            const { nama, kelas, absen } = tempIzinData;
-            let idx = localDB[kelas].findIndex(d => d.Absen === absen);
-            if (idx !== -1) {
-                localDB[kelas][idx].Status = tipe;
-                alert(`${nama}: ${tipe} Berhasil`);
-                tutupModalIzin(); renderLog(); await syncToGithub(kelas);
-            }
-        }
-
-        function tutupModalIzin() { document.getElementById('modal-izin').classList.add('hidden'); document.getElementById('modal-izin').classList.remove('flex'); }
-
-        // --- DOWNLOAD & TOOLS ---
-        async function downloadZipLaporan() {
-            const zip = new JSZip(); const today = new Date().toLocaleDateString('id-ID');
-            for (const cls of DAFTAR_KELAS) {
-                if (localDB[cls].length > 0) {
-                    const ws = XLSX.utils.json_to_sheet(localDB[cls]);
-                    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "REKAP");
-                    zip.file(`REKAP_${cls}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
-                }
-            }
-            const content = await zip.generateAsync({type:"blob"});
-            const l = document.createElement('a'); l.href = URL.createObjectURL(content); l.download = `ABSEN_SMA12.zip`; l.click();
-        }
-
-        // --- UI HELPERS ---
-        function switchTab(t) { 
-            if (!isGuruLoggedIn) { document.getElementById('modal-login').classList.remove('hidden'); return; } 
-            document.getElementById('tab-admin').classList.toggle('hidden', t !== 'admin'); 
-            document.getElementById('tab-scan').classList.toggle('hidden', t !== 'scan'); 
-            document.getElementById('btn-admin').classList.toggle('active-tab', t === 'admin'); 
-            document.getElementById('btn-scan').classList.toggle('active-tab', t === 'scan'); 
-            if(t !== 'scan') stopScanner(); 
-        }
-        function tutupLogin() { document.getElementById('modal-login').classList.add('hidden'); }
-        function updateUIAfterLogin() { document.getElementById('btn-logout').classList.remove('hidden'); }
-        function startScanner() {
-            document.getElementById('btn-start-cam').classList.add('hidden');
-            document.getElementById('btn-stop-cam').classList.remove('hidden');
-            if (!html5QrScanner) html5QrScanner = new Html5Qrcode("reader");
-            html5QrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (text) => prosesAbsen(text));
-        }
-        async function stopScanner() { if (html5QrScanner && html5QrScanner.isScanning) await html5QrScanner.stop(); document.getElementById('btn-start-cam').classList.remove('hidden'); document.getElementById('btn-stop-cam').classList.add('hidden'); }
-        function showFeedback(i, n, f, b) {
-            const fb = document.getElementById('scan-feedback');
-            document.getElementById('check-icons').innerText = i; document.getElementById('scanned-name').innerText = n; document.getElementById('scanned-info').innerText = f;
-            document.getElementById('feedback-content').className = `text-center text-white p-10 rounded-[3rem] shadow-2xl ${b} border border-white/20`;
-            fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2000);
-        }
-        function setMode(mode) { currentMode = mode; document.getElementById('mode-islam').classList.toggle('active-mode-islam', mode === 'Islam'); document.getElementById('mode-kristen').classList.toggle('active-mode-kristen', mode === 'Kristen'); }
-
-        window.onload = init;
-    </script>
+    window.onload = init;
+  </script>
 </body>
 </html>
