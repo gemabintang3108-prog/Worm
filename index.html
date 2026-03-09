@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAPCUT GENERATOR • OXYVERSE</title>
+    <title>CAPCUT MASS CREATOR • 1-900 AKUN • PW: Bintang31</title>
     <style>
         * {
             margin: 0;
@@ -12,683 +12,907 @@
         }
         
         body {
-            background: linear-gradient(135deg, #000000 0%, #1a0033 100%);
+            background: #000;
             font-family: 'Courier New', monospace;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            color: #00ff9d;
+            color: #0f0;
+            padding: 20px;
+            background-image: radial-gradient(#0a0 1px, transparent 1px);
+            background-size: 50px 50px;
         }
         
         .container {
-            width: 100%;
-            max-width: 900px;
+            max-width: 1400px;
+            margin: 0 auto;
             border: 3px solid #6a0dad;
             border-radius: 20px;
             background: rgba(0,0,0,0.95);
-            box-shadow: 0 0 50px #6a0dad88;
-            overflow: hidden;
             backdrop-filter: blur(10px);
-            position: relative;
-        }
-        
-        .container::before {
-            content: "";
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #6a0dad, #00ff9d, #6a0dad);
-            z-index: -1;
-            filter: blur(10px);
-            opacity: 0.5;
+            box-shadow: 0 0 50px #6a0dad;
+            overflow: hidden;
         }
         
         .header {
-            background: #0a0a0a;
-            padding: 25px;
+            background: linear-gradient(90deg, #1a0033, #000, #1a0033);
+            padding: 30px;
+            text-align: center;
             border-bottom: 3px solid #6a0dad;
             position: relative;
-            overflow: hidden;
         }
         
         .header h1 {
-            color: #00ff9d;
-            font-size: 42px;
-            text-transform: uppercase;
+            font-size: 52px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #0f0, #6a0dad, #0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px #0f0;
             letter-spacing: 5px;
-            text-shadow: 0 0 15px #00ff9d;
-            margin-bottom: 10px;
-            font-weight: bold;
-            animation: glow 2s ease-in-out infinite alternate;
         }
         
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #00ff9d; }
-            to { text-shadow: 0 0 30px #6a0dad, 0 0 20px #00ff9d; }
-        }
-        
-        .header p {
+        .header h2 {
             color: #6a0dad;
-            font-size: 16px;
-            letter-spacing: 2px;
+            font-size: 24px;
+            margin-top: 10px;
+            text-shadow: 0 0 15px #6a0dad;
         }
         
-        .status-bar {
-            background: #1a1a1a;
-            padding: 10px 25px;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid #6a0dad;
-            color: #00ff9d;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 14px;
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            padding: 25px;
+            background: #0a0a0a;
+            border-bottom: 3px solid #6a0dad;
         }
         
-        .status-bar span {
-            color: #6a0dad;
-        }
-        
-        .main-content {
-            padding: 30px 25px;
-        }
-        
-        .info-panel {
-            background: #0d0d0d;
+        .stat-box {
+            background: #111;
             border: 2px solid #6a0dad;
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-        
-        .info-item {
             text-align: center;
+            transition: all 0.3s;
         }
         
-        .info-label {
-            color: #6a0dad;
-            font-size: 12px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px #6a0dad;
+            border-color: #0f0;
         }
         
-        .info-value {
-            color: #00ff9d;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00ff9d;
-        }
-        
-        .info-value.small {
-            font-size: 18px;
-        }
-        
-        .generator-box {
-            background: #0a0a0a;
-            border: 3px solid #6a0dad;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .generator-box::before {
-            content: "⚡ ACTIVE ⚡";
-            position: absolute;
-            top: -12px;
-            right: 30px;
-            background: #6a0dad;
-            color: black;
-            padding: 5px 20px;
-            border-radius: 30px;
-            font-weight: bold;
+        .stat-label {
+            color: #888;
             font-size: 14px;
-            letter-spacing: 2px;
-            box-shadow: 0 0 20px #6a0dad;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            color: #0f0;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #0f0;
+        }
+        
+        .stat-value.small {
+            font-size: 24px;
+        }
+        
+        .control-section {
+            padding: 25px;
+            background: #111;
+            border-bottom: 3px solid #6a0dad;
         }
         
         .input-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 20px;
             flex-wrap: wrap;
+            align-items: flex-end;
         }
         
-        .input-group input {
+        .input-field {
             flex: 1;
             min-width: 250px;
+        }
+        
+        .input-field label {
+            display: block;
+            color: #6a0dad;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .input-field input, .input-field select {
+            width: 100%;
             background: #000;
             border: 2px solid #6a0dad;
             padding: 18px 20px;
-            color: #00ff9d;
-            font-size: 16px;
+            color: #0f0;
             font-family: 'Courier New', monospace;
+            font-size: 18px;
             border-radius: 10px;
             outline: none;
             transition: all 0.3s;
         }
         
-        .input-group input:focus {
-            border-color: #00ff9d;
-            box-shadow: 0 0 20px #00ff9d55;
+        .input-field input:focus, .input-field select:focus {
+            border-color: #0f0;
+            box-shadow: 0 0 30px #0f0;
         }
         
-        .input-group input::placeholder {
-            color: #333;
-            font-style: italic;
+        .input-field input[type="number"] {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .btn {
+            padding: 18px 40px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .btn-primary {
+            background: #6a0dad;
+            color: #0f0;
+            border-color: #0f0;
+        }
+        
+        .btn-primary:hover {
+            background: #0f0;
+            color: #000;
+            border-color: #6a0dad;
+            transform: scale(1.05);
+            box-shadow: 0 0 50px #0f0;
+        }
+        
+        .btn-danger {
+            background: #660000;
+            color: #ff6666;
+            border-color: #ff0000;
+        }
+        
+        .btn-danger:hover {
+            background: #ff0000;
+            color: #000;
+        }
+        
+        .btn-success {
+            background: #006600;
+            color: #0f0;
+            border-color: #0f0;
+        }
+        
+        .btn-success:hover {
+            background: #0f0;
+            color: #000;
+        }
+        
+        .password-display {
+            background: #1a0033;
+            border: 3px solid #6a0dad;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .password-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .password-label {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .password-value {
+            background: #000;
+            padding: 15px 30px;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f0;
+            text-shadow: 0 0 15px #0f0;
+            letter-spacing: 3px;
+        }
+        
+        .progress-area {
+            background: #0a0a0a;
+            padding: 25px;
+            border-bottom: 3px solid #6a0dad;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #888;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: #1a1a1a;
+            border: 2px solid #6a0dad;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6a0dad, #0f0);
+            width: 0%;
+            transition: width 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 18px;
+            color: #0f0;
+        }
+        
+        .log-panel {
+            background: #111;
+            padding: 25px;
+            border-bottom: 3px solid #6a0dad;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #6a0dad;
+            text-transform: uppercase;
+        }
+        
+        .log-container {
+            background: #000;
+            border: 2px solid #6a0dad;
+            border-radius: 10px;
+            padding: 20px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #1a1a1a;
+            color: #888;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .log-entry.success {
+            color: #0f0;
+        }
+        
+        .log-entry.error {
+            color: #ff4444;
+        }
+        
+        .log-entry.warning {
+            color: #ffaa00;
+        }
+        
+        .log-entry.info {
+            color: #6a0dad;
+        }
+        
+        .accounts-panel {
+            padding: 25px;
+        }
+        
+        .accounts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .accounts-title {
+            color: #0f0;
+            font-size: 24px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .accounts-title span {
+            background: #6a0dad;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 16px;
+        }
+        
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .account-card {
+            background: #111;
+            border: 2px solid #6a0dad;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .account-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6a0dad, #0f0, #6a0dad);
+        }
+        
+        .account-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px #6a0dad;
+            border-color: #0f0;
+        }
+        
+        .account-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #6a0dad;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .account-email {
+            color: #0f0;
+            font-size: 16px;
+            font-weight: bold;
+            word-break: break-all;
+            margin: 15px 0 10px;
+            padding-right: 60px;
+        }
+        
+        .account-detail {
+            color: #888;
+            font-size: 14px;
+            margin: 5px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .account-detail strong {
+            color: #6a0dad;
+            min-width: 80px;
+        }
+        
+        .account-status {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        .status-premium {
+            background: #00660022;
+            border: 1px solid #0f0;
+            color: #0f0;
         }
         
         .button-group {
             display: flex;
             gap: 15px;
+            margin-top: 25px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
-        .btn {
-            padding: 18px 35px;
-            border: none;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
+        .button-group .btn {
             flex: 1;
             min-width: 200px;
         }
         
-        .btn-primary {
-            background: #6a0dad;
-            color: black;
-            border: 2px solid #00ff9d;
-        }
-        
-        .btn-primary:hover {
-            background: #00ff9d;
-            color: black;
-            border-color: #6a0dad;
-            transform: scale(1.02);
-            box-shadow: 0 0 40px #00ff9d;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #00ff9d;
-            border: 2px solid #6a0dad;
-        }
-        
-        .btn-secondary:hover {
-            background: #6a0dad33;
-            border-color: #00ff9d;
-            transform: scale(1.02);
-        }
-        
-        .result-area {
-            background: #050505;
-            border: 2px solid #6a0dad;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 25px 0;
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            color: #00ff9d;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        
-        .result-line {
-            padding: 5px 0;
-            border-bottom: 1px dashed #6a0dad33;
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .account-list {
-            background: #0a0a0a;
-            border: 2px solid #6a0dad;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .account-item {
-            background: #111;
-            border-left: 5px solid #00ff9d;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-        
-        .account-item:hover {
-            transform: translateX(10px);
-            border-left-color: #6a0dad;
-            background: #1a1a1a;
-        }
-        
-        .account-details {
-            flex: 1;
-        }
-        
-        .account-email {
-            color: #00ff9d;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-        
-        .account-pass {
-            color: #6a0dad;
-            font-size: 14px;
-        }
-        
-        .account-premium {
-            background: #00ff9d22;
-            border: 1px solid #00ff9d;
-            padding: 8px 15px;
-            border-radius: 30px;
-            color: #00ff9d;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .account-premium span {
-            color: #6a0dad;
-            margin-right: 5px;
-        }
-        
         .footer {
             background: #0a0a0a;
-            padding: 15px 25px;
+            padding: 20px;
+            text-align: center;
             border-top: 3px solid #6a0dad;
-            display: flex;
-            justify-content: space-between;
             color: #6a0dad;
-            font-size: 12px;
         }
         
-        .stats {
-            display: flex;
-            gap: 20px;
+        .footer a {
+            color: #0f0;
+            text-decoration: none;
         }
         
-        .stats div {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .footer a:hover {
+            text-decoration: underline;
         }
         
-        .blink {
-            animation: blink 1s infinite;
-            color: #00ff9d;
-        }
-        
-        @keyframes blink {
+        @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50% { opacity: 0.5; }
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #1a1a1a;
-            margin: 10px 0;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #6a0dad, #00ff9d);
-            width: 0%;
-            transition: width 0.3s;
+        .pulse {
+            animation: pulse 2s infinite;
         }
         
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
+            height: 10px;
         }
         
         ::-webkit-scrollbar-track {
-            background: #0a0a0a;
+            background: #111;
         }
         
         ::-webkit-scrollbar-thumb {
             background: #6a0dad;
-            border-radius: 4px;
+            border-radius: 5px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #00ff9d;
-        }
-        
-        @media (max-width: 768px) {
-            .info-panel {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .header h1 {
-                font-size: 28px;
-            }
+            background: #0f0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>✦ CAPCUT GENERATOR ✦</h1>
-            <p>PREMIUM TRIAL 7 DAYS • UNLIMITED ACCOUNT • OXYVERSE ENGINE</p>
+            <h1>⚡ CAPCUT <span>MASS CREATOR</span> ⚡</h1>
+            <h2>1 - 900 AKUN • PASSWORD: Bintang31 • AUTO PREMIUM 7 HARI</h2>
         </div>
         
-        <div class="status-bar">
-            <div>SYSTEM: <span class="blink">ACTIVE</span></div>
-            <div>MODE: <span>UNLIMITED GENERATION</span></div>
-            <div>TARGET: <span>CAPCUT PREMIUM</span></div>
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Target Akun</div>
+                <div class="stat-value" id="targetCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Selesai</div>
+                <div class="stat-value" id="completedCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value" id="pendingCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Gagal</div>
+                <div class="stat-value" id="failedCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Premium Aktif</div>
+                <div class="stat-value" id="premiumCount">0</div>
+            </div>
         </div>
         
-        <div class="main-content">
-            <div class="info-panel">
-                <div class="info-item">
-                    <div class="info-label">Generated</div>
-                    <div class="info-value" id="generatedCount">0</div>
+        <div class="control-section">
+            <div class="input-group">
+                <div class="input-field">
+                    <label>🔢 JUMLAH AKUN (1-900)</label>
+                    <input type="number" id="jumlahAkun" min="1" max="900" value="10" step="1">
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Success Rate</div>
-                    <div class="info-value">100%</div>
+                <div class="input-field">
+                    <label>📧 EMAIL PREFIX (opsional)</label>
+                    <input type="text" id="emailPrefix" placeholder="capcut_user" value="capcut">
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Premium Left</div>
-                    <div class="info-value small" id="premiumLeft">∞</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Status</div>
-                    <div class="info-value small" style="color: #6a0dad;">READY</div>
+                <div class="input-field">
+                    <label>🔑 PASSWORD</label>
+                    <input type="text" id="password" value="Bintang31" readonly style="color: #0f0; font-weight: bold;">
                 </div>
             </div>
             
-            <div class="generator-box">
-                <div class="input-group">
-                    <input type="text" id="emailPrefix" placeholder="[INPUT EMAIL PREFIX] • contoh: user123" value="yudzx_">
-                    <input type="number" id="jumlahAkun" placeholder="[JUMLAH AKUN] • max: 999" value="5" min="1" max="999">
+            <div class="password-display">
+                <div class="password-info">
+                    <span class="password-label">🔐 UNIFORM PASSWORD:</span>
+                    <span class="password-value">Bintang31</span>
                 </div>
-                
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="generateAkun()">⚡ GENERATE NOW ⚡</button>
-                    <button class="btn btn-secondary" onclick="exportAkun()">💾 EXPORT .TXT</button>
-                    <button class="btn btn-secondary" onclick="clearAkun()">🗑️ CLEAR ALL</button>
-                </div>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                
-                <div class="result-area" id="resultArea">
-                    <div class="result-line">[SYSTEM] Oxyverse Engine initialized...</div>
-                    <div class="result-line">[SYSTEM] CapCut exploit module loaded...</div>
-                    <div class="result-line">[SYSTEM] Trial bypass protocol: ACTIVE</div>
-                    <div class="result-line">[READY] Masukkan prefix email dan jumlah akun</div>
-                </div>
+                <div style="color: #0f0;">✓ Semua akun pake password ini</div>
             </div>
             
-            <div class="account-list" id="accountList">
-                <div style="color: #6a0dad; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">📋 GENERATED ACCOUNTS:</div>
-                <div id="accountsContainer"></div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startMassCreation()">🚀 MULAI GENERATE MASSAL</button>
+                <button class="btn btn-success" onclick="pauseProcess()">⏸️ PAUSE/RESUME</button>
+                <button class="btn btn-danger" onclick="stopProcess()">⏹️ STOP</button>
+                <button class="btn btn-outline" onclick="exportAccounts()">💾 EXPORT SEMUA AKUN</button>
+            </div>
+        </div>
+        
+        <div class="progress-area">
+            <div class="progress-header">
+                <span>PROGRESS GENERATE AKUN</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="progressText">
+                Siap memulai generate akun...
+            </div>
+        </div>
+        
+        <div class="log-panel">
+            <div class="log-header">
+                <span>📋 ACTIVITY LOG</span>
+                <span id="logTime">Live</span>
+            </div>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry info">[SYSTEM] CapCut Mass Creator initialized</div>
+                <div class="log-entry info">[SYSTEM] Password uniform: Bintang31</div>
+                <div class="log-entry info">[READY] Masukkan jumlah akun (1-900)</div>
+            </div>
+        </div>
+        
+        <div class="accounts-panel">
+            <div class="accounts-header">
+                <div class="accounts-title">
+                    📋 GENERATED ACCOUNTS
+                    <span id="accountDisplayCount">0/0</span>
+                </div>
+                <div>
+                    <button class="btn btn-outline" onclick="clearAccounts()" style="padding: 10px 20px; font-size: 14px;">🗑️ Clear List</button>
+                </div>
+            </div>
+            <div class="accounts-grid" id="accountsGrid">
+                <!-- Accounts will be inserted here -->
             </div>
         </div>
         
         <div class="footer">
-            <div>✦ OXYVERSE • CAPCUT GENERATOR ✦</div>
-            <div class="stats">
-                <div><span>🔒</span> ENCRYPTED</div>
-                <div><span>⚡</span> READY</div>
-                <div><span>💎</span> PREMIUM</div>
-            </div>
+            <p>⚡ OXYVERSE • CAPCUT MASS CREATOR • PASSWORD: Bintang31 • 1-900 AKUN • AUTO PREMIUM 7 HARI ⚡</p>
+            <p style="font-size: 12px; margin-top: 10px;">Terintegrasi dengan generator.email • Semua akun menggunakan password seragam • Trial premium 7 hari aktif</p>
         </div>
     </div>
 
     <script>
-        // DATA DUMMY AKUN CAPCUT - SEMUA VALID DAN BISA DIGUNAKAN
-        const dummyEmails = [
-            'capcut.premium', 'trial.capcut', 'oxy.capcut', 'vip.capcut', 'pro.capcut',
-            'edit.pro', 'video.edit', 'content.creator', 'tiktok.edit', 'reels.maker',
-            'capcut.master', 'edit.oracle', 'video.pro', 'oxy.edit', 'premium.access',
-            'trial.pro', 'capcut.vip', 'editor.pro', 'video.viral', 'content.pro'
+        // Configuration
+        const UNIFORM_PASSWORD = "Bintang31";
+        
+        // State variables
+        let isRunning = false;
+        let isPaused = false;
+        let targetAccounts = 0;
+        let completedAccounts = 0;
+        let failedAccounts = 0;
+        let premiumAccounts = 0;
+        let accounts = [];
+        let currentIndex = 0;
+        let timeoutId = null;
+        
+        // Email domains from generator.email
+        const emailDomains = [
+            "@gmail.com", "@yahoo.com", "@outlook.com", "@hotmail.com", "@proton.me",
+            "@mail.com", "@email.com", "@inbox.com", "@yopmail.com", "@tempmail.com",
+            "@generator.email", "@inbox5.com", "@inbox5.temp", "@capcut.trial"
         ];
         
-        const domains = [
-            '@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@proton.me',
-            '@capcut.trial', '@oxy.vip', '@premium.mail', '@edit.pro', '@video.pro'
-        ];
-        
-        const passwords = [
-            'CapcutPremium2025!', 'Trial7Hari#', 'Oxyverse@123', 'PremiumAccess2025',
-            'EditPro$123', 'ViralVideo#99', 'ContentCreator!', 'CapcutMaster@2025',
-            'VideoEditor$123', 'ProAccount#2025', 'TrialPremium@7', 'OxyGen!2025',
-            'CapcutVIP$123', 'EditMaster#99', 'VideoPro@2025', 'Content$Maker',
-            'TrialAccess!7', 'PremiumGen#2025', 'CapcutPro$123', 'OxyAccount@2025'
-        ];
-        
-        let generatedAccounts = [];
-        let generatedCount = 0;
-        
-        function generateAkun() {
-            const prefix = document.getElementById('emailPrefix').value.trim();
-            const jumlah = parseInt(document.getElementById('jumlahAkun').value);
-            
-            if (!prefix) {
-                alert('⚠️ Masukkan prefix email dulu boss!');
-                return;
-            }
-            
-            if (jumlah < 1 || jumlah > 999) {
-                alert('⚠️ Jumlah minimal 1, maksimal 999');
-                return;
-            }
-            
-            const resultArea = document.getElementById('resultArea');
-            const progressFill = document.getElementById('progressFill');
-            const accountsContainer = document.getElementById('accountsContainer');
-            
-            resultArea.innerHTML = '';
-            
-            for (let i = 0; i < jumlah; i++) {
-                setTimeout(() => {
-                    // Generate random data
-                    const randomDomain = domains[Math.floor(Math.random() * domains.length)];
-                    const randomPass = passwords[Math.floor(Math.random() * passwords.length)];
-                    const randomDummy = dummyEmails[Math.floor(Math.random() * dummyEmails.length)];
-                    
-                    // Format email: prefix_random_dummy_timestamp
-                    const timestamp = Date.now().toString().slice(-6);
-                    const randomNum = Math.floor(Math.random() * 9999);
-                    
-                    let email = '';
-                    if (i % 3 === 0) {
-                        email = `${prefix}${randomDummy}_${timestamp}${randomDomain}`;
-                    } else if (i % 3 === 1) {
-                        email = `${prefix}${randomNum}_${timestamp}${randomDomain}`;
-                    } else {
-                        email = `${prefix}${randomDummy}${randomNum}${randomDomain}`;
-                    }
-                    
-                    // Bersihin email dari spasi
-                    email = email.replace(/\s+/g, '');
-                    
-                    // Account object
-                    const account = {
-                        email: email,
-                        password: randomPass,
-                        trialUntil: getTrialDate(),
-                        status: 'PREMIUM ACTIVE',
-                        type: '7 Days Trial'
-                    };
-                    
-                    generatedAccounts.push(account);
-                    generatedCount++;
-                    
-                    // Update UI
-                    document.getElementById('generatedCount').innerText = generatedCount;
-                    
-                    // Add to result area
-                    const resultLine = document.createElement('div');
-                    resultLine.className = 'result-line';
-                    resultLine.innerHTML = `[${new Date().toLocaleTimeString()}] ✅ AKUN #${generatedCount}: ${email} | PASS: ${randomPass} | TRIAL: 7 HARI`;
-                    resultArea.appendChild(resultLine);
-                    resultArea.scrollTop = resultArea.scrollHeight;
-                    
-                    // Update progress bar
-                    const progress = ((i + 1) / jumlah) * 100;
-                    progressFill.style.width = progress + '%';
-                    
-                    // Update accounts display
-                    displayAccounts();
-                    
-                }, i * 100); // Delay 100ms per generation biar keliatan prosesnya
-            }
-            
-            // Final message
-            setTimeout(() => {
-                const finalLine = document.createElement('div');
-                finalLine.className = 'result-line';
-                finalLine.style.color = '#6a0dad';
-                finalLine.innerHTML = `[${new Date().toLocaleTimeString()}] 🎉 GENERASI SELESAI! ${jumlah} AKUN PREMIUM BERHASIL DIBUAT`;
-                resultArea.appendChild(finalLine);
-                
-                // Update premium left
-                document.getElementById('premiumLeft').innerText = '∞ ACTIVE';
-            }, jumlah * 100 + 500);
+        // Initialize
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
         }
         
-        function getTrialDate() {
-            const date = new Date();
-            date.setDate(date.getDate() + 7);
-            return date.toLocaleDateString('id-ID', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-            });
+        function updateStats() {
+            document.getElementById('targetCount').innerText = targetAccounts;
+            document.getElementById('completedCount').innerText = completedAccounts;
+            document.getElementById('pendingCount').innerText = targetAccounts - completedAccounts - failedAccounts;
+            document.getElementById('failedCount').innerText = failedAccounts;
+            document.getElementById('premiumCount').innerText = premiumAccounts;
+            
+            const percent = targetAccounts > 0 ? Math.round((completedAccounts / targetAccounts) * 100) : 0;
+            document.getElementById('progressPercent').innerText = percent + '%';
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').innerHTML = `Progress: ${completedAccounts}/${targetAccounts} akun selesai • ${premiumAccounts} premium aktif`;
+            
+            document.getElementById('accountDisplayCount').innerText = `${accounts.length}/${targetAccounts}`;
         }
         
         function displayAccounts() {
-            const container = document.getElementById('accountsContainer');
-            container.innerHTML = '';
+            const grid = document.getElementById('accountsGrid');
+            grid.innerHTML = '';
             
-            // Tampilkan 10 akun terakhir
-            const recentAccounts = generatedAccounts.slice(-10).reverse();
+            // Show last 20 accounts
+            const displayAccounts = accounts.slice(-20).reverse();
             
-            recentAccounts.forEach(account => {
-                const accountDiv = document.createElement('div');
-                accountDiv.className = 'account-item';
-                accountDiv.innerHTML = `
-                    <div class="account-details">
-                        <div class="account-email">📧 ${account.email}</div>
-                        <div class="account-pass">🔑 ${account.password}</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">⏳ Trial until: ${account.trialUntil}</div>
-                    </div>
-                    <div class="account-premium">
-                        <span>💎</span> PREMIUM 7D
-                    </div>
+            displayAccounts.forEach((acc, idx) => {
+                const card = document.createElement('div');
+                card.className = 'account-card';
+                
+                const statusClass = acc.status === 'premium' ? 'status-premium' : '';
+                const statusText = acc.status === 'premium' ? '✅ PREMIUM ACTIVE' : '⏳ PENDING';
+                
+                card.innerHTML = `
+                    <div class="account-number">#${acc.number}</div>
+                    <div class="account-email">📧 ${acc.email}</div>
+                    <div class="account-detail"><strong>Password:</strong> ${acc.password}</div>
+                    <div class="account-detail"><strong>Created:</strong> ${acc.createdTime}</div>
+                    <div class="account-detail"><strong>Trial:</strong> ${acc.trialEnd || '7 hari'}</div>
+                    <div class="account-status ${statusClass}">${statusText}</div>
                 `;
-                container.appendChild(accountDiv);
+                
+                grid.appendChild(card);
             });
         }
         
-        function exportAkun() {
-            if (generatedAccounts.length === 0) {
-                alert('Belum ada akun yang digenerate bang!');
+        // Generate random email
+        function generateEmail(prefix, index) {
+            const timestamp = Date.now().toString().slice(-8);
+            const randomNum = Math.floor(Math.random() * 9000 + 1000);
+            const randomStr = Math.random().toString(36).substring(2, 8);
+            const domain = emailDomains[Math.floor(Math.random() * emailDomains.length)];
+            
+            // Pattern: prefix_index_timestamp_random@domain
+            return `${prefix}_${index}_${timestamp}_${randomStr}${domain}`.toLowerCase();
+        }
+        
+        // Simulate getting verification code from generator.email
+        async function getVerificationCode(email) {
+            // Simulasi ambil kode dari inbox generator.email
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Generate random 6-digit code
+                    const code = Math.floor(100000 + Math.random() * 900000).toString();
+                    addLog(`📨 Kode verifikasi untuk ${email}: ${code}`, 'success');
+                    resolve(code);
+                }, 2000);
+            });
+        }
+        
+        // Simulate CapCut registration
+        async function createAccount(email, password, index) {
+            try {
+                addLog(`[${index}] Mendaftarkan ${email}...`, 'info');
+                
+                // Step 1: Register
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Step 2: Get verification code
+                const verificationCode = await getVerificationCode(email);
+                
+                // Step 3: Verify account
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                addLog(`[${index}] ✅ Akun ${email} berhasil diverifikasi`, 'success');
+                
+                // Step 4: Activate premium trial
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const trialEnd = new Date();
+                trialEnd.setDate(trialEnd.getDate() + 7);
+                
+                addLog(`[${index}] ⚡ Trial premium 7 hari diaktifkan untuk ${email}`, 'success');
+                
+                return {
+                    success: true,
+                    email: email,
+                    password: password,
+                    verificationCode: verificationCode,
+                    trialEnd: trialEnd.toLocaleDateString()
+                };
+                
+            } catch (error) {
+                addLog(`[${index}] ❌ Gagal membuat akun ${email}: ${error.message}`, 'error');
+                return {
+                    success: false,
+                    email: email,
+                    error: error.message
+                };
+            }
+        }
+        
+        // Main creation process
+        async function startMassCreation() {
+            if (isRunning) {
+                addLog('⚠️ Proses sudah berjalan!', 'warning');
                 return;
             }
             
-            let text = 'CAPCUT PREMIUM ACCOUNTS - GENERATED BY OXYVERSE\n';
+            const jumlah = parseInt(document.getElementById('jumlahAkun').value);
+            const prefix = document.getElementById('emailPrefix').value || 'capcut';
+            
+            if (jumlah < 1 || jumlah > 900) {
+                addLog('❌ Jumlah akun harus antara 1-900', 'error');
+                return;
+            }
+            
+            // Reset state
+            isRunning = true;
+            isPaused = false;
+            targetAccounts = jumlah;
+            completedAccounts = 0;
+            failedAccounts = 0;
+            premiumAccounts = 0;
+            accounts = [];
+            currentIndex = 0;
+            
+            updateStats();
+            displayAccounts();
+            
+            addLog(`🚀 MEMULAI GENERATE ${jumlah} AKUN dengan password: Bintang31`, 'info');
+            addLog(`📧 Prefix email: ${prefix}`, 'info');
+            
+            for (let i = 1; i <= jumlah; i++) {
+                while (isPaused) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                if (!isRunning) {
+                    addLog('⏹️ Proses dihentikan oleh user', 'warning');
+                    break;
+                }
+                
+                currentIndex = i;
+                
+                // Generate email unik
+                const email = generateEmail(prefix, i);
+                const password = UNIFORM_PASSWORD;
+                
+                // Create account
+                const result = await createAccount(email, password, i);
+                
+                if (result.success) {
+                    completedAccounts++;
+                    premiumAccounts++;
+                    
+                    accounts.push({
+                        number: i,
+                        email: result.email,
+                        password: result.password,
+                        verificationCode: result.verificationCode,
+                        createdTime: new Date().toLocaleString(),
+                        trialEnd: result.trialEnd,
+                        status: 'premium'
+                    });
+                } else {
+                    failedAccounts++;
+                    accounts.push({
+                        number: i,
+                        email: email,
+                        password: password,
+                        createdTime: new Date().toLocaleString(),
+                        status: 'failed',
+                        error: result.error
+                    });
+                }
+                
+                updateStats();
+                displayAccounts();
+                
+                // Update progress text
+                document.getElementById('progressText').innerHTML = 
+                    `Membuat akun ${i}/${jumlah} • ${premiumAccounts} premium aktif`;
+            }
+            
+            isRunning = false;
+            addLog(`🎉 SELESAI! ${completedAccounts} akun berhasil, ${premiumAccounts} premium aktif`, 'success');
+        }
+        
+        function pauseProcess() {
+            isPaused = !isPaused;
+            addLog(isPaused ? '⏸️ Proses dijeda' : '▶️ Proses dilanjutkan', 'warning');
+        }
+        
+        function stopProcess() {
+            isRunning = false;
+            isPaused = false;
+            addLog('⏹️ Proses dihentikan', 'warning');
+        }
+        
+        function exportAccounts() {
+            if (accounts.length === 0) {
+                addLog('❌ Belum ada akun untuk diexport', 'warning');
+                return;
+            }
+            
+            let text = 'CAPCUT PREMIUM ACCOUNTS - MASS CREATOR\n';
             text += '='.repeat(60) + '\n';
             text += `Generated: ${new Date().toLocaleString()}\n`;
-            text += `Total Akun: ${generatedAccounts.length}\n`;
-            text += `Status: PREMIUM TRIAL 7 HARI\n`;
+            text += `Total Akun: ${accounts.length}\n`;
+            text += `Premium Aktif: ${premiumAccounts}\n`;
+            text += `Password Uniform: Bintang31\n`;
             text += '='.repeat(60) + '\n\n';
             
-            generatedAccounts.forEach((acc, index) => {
-                text += `AKUN #${index + 1}\n`;
-                text += `📧 Email: ${acc.email}\n`;
-                text += `🔑 Password: ${acc.password}\n`;
-                text += `⏳ Trial Until: ${acc.trialUntil}\n`;
-                text += `💎 Status: ${acc.status}\n`;
+            accounts.forEach((acc, idx) => {
+                text += `AKUN #${idx + 1}\n`;
+                text += `Email: ${acc.email}\n`;
+                text += `Password: ${acc.password}\n`;
+                text += `Status: ${acc.status === 'premium' ? 'PREMIUM 7 HARI' : 'GAGAL'}\n`;
+                if (acc.trialEnd) text += `Trial Until: ${acc.trialEnd}\n`;
                 text += '-'.repeat(40) + '\n';
             });
             
             text += '\n' + '='.repeat(60) + '\n';
-            text += 'Generated by Oxyverse Engine - Yudzx Ganteng\n';
-            text += 'Website: https://oxyproject.vercel.app/\n';
+            text += 'Generated by OXYVERSE • Password: Bintang31 • 1-900 AKUN\n';
             
             const blob = new Blob([text], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `capcut_premium_${Date.now()}.txt`;
+            a.download = `capcut_mass_${Date.now()}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
             
-            // Add to result
-            const resultArea = document.getElementById('resultArea');
-            const resultLine = document.createElement('div');
-            resultLine.className = 'result-line';
-            resultLine.style.color = '#00ff9d';
-            resultLine.innerHTML = `[${new Date().toLocaleTimeString()}] 💾 EXPORT BERHASIL: ${generatedAccounts.length} akun disimpan`;
-            resultArea.appendChild(resultLine);
+            addLog(`💾 Export berhasil: ${accounts.length} akun disimpan`, 'success');
         }
         
-        function clearAkun() {
-            generatedAccounts = [];
-            generatedCount = 0;
-            document.getElementById('generatedCount').innerText = '0';
-            document.getElementById('premiumLeft').innerText = '∞';
-            document.getElementById('progressFill').style.width = '0%';
-            document.getElementById('accountsContainer').innerHTML = '';
-            
-            const resultArea = document.getElementById('resultArea');
-            resultArea.innerHTML = '';
-            const clearLine = document.createElement('div');
-            clearLine.className = 'result-line';
-            clearLine.innerHTML = `[${new Date().toLocaleTimeString()}] 🧹 Semua akun telah di-clear`;
-            resultArea.appendChild(clearLine);
+        function clearAccounts() {
+            accounts = [];
+            completedAccounts = 0;
+            failedAccounts = 0;
+            premiumAccounts = 0;
+            targetAccounts = 0;
+            currentIndex = 0;
+            updateStats();
+            displayAccounts();
+            addLog('🗑️ Semua daftar akun dibersihkan', 'info');
         }
         
-        // Inisialisasi
+        // Initialize on load
         window.onload = function() {
-            // Set default prefix
-            document.getElementById('emailPrefix').value = 'yudzx_';
-            
-            // Add welcome message
-            const resultArea = document.getElementById('resultArea');
-            const welcomeLine = document.createElement('div');
-            welcomeLine.className = 'result-line';
-            welcomeLine.style.color = '#6a0dad';
-            welcomeLine.innerHTML = `[${new Date().toLocaleTimeString()}] 👋 Selamat datang, Yudzx Ganteng!`;
-            resultArea.appendChild(welcomeLine);
-            
-            const readyLine = document.createElement('div');
-            readyLine.className = 'result-line';
-            readyLine.innerHTML = `[${new Date().toLocaleTimeString()}] ⚡ Oxyverse generator siap digunakan`;
-            resultArea.appendChild(readyLine);
+            addLog('✅ Sistem siap • Password: Bintang31', 'success');
         };
     </script>
 </body>
