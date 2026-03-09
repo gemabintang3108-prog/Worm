@@ -1,952 +1,695 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Smart Gate - Sekolah (2 Kelas)</title>
-  <meta name="theme-color" content="#0d1117" />
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background:#0d1117; color:#c9d1d9; -webkit-tap-highlight-color: transparent; }
-    .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; }
-    .active-tab { background:#0891b2; color:#fff; box-shadow: 0 0 20px rgba(8,145,178,.5); }
-    #reader { border:none !important; border-radius:1.5rem; overflow:hidden; background:#000; }
-    .log-item { animation: slideIn .25s ease-out forwards; }
-    @keyframes slideIn { from { transform: translateY(10px); opacity:0 } to { transform: translateY(0); opacity:1 } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPCUT GENERATOR • OXYVERSE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a0033 100%);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            color: #00ff9d;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            border: 3px solid #6a0dad;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.95);
+            box-shadow: 0 0 50px #6a0dad88;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #6a0dad, #00ff9d, #6a0dad);
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0.5;
+        }
+        
+        .header {
+            background: #0a0a0a;
+            padding: 25px;
+            border-bottom: 3px solid #6a0dad;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header h1 {
+            color: #00ff9d;
+            font-size: 42px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px #00ff9d;
+            margin-bottom: 10px;
+            font-weight: bold;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff9d; }
+            to { text-shadow: 0 0 30px #6a0dad, 0 0 20px #00ff9d; }
+        }
+        
+        .header p {
+            color: #6a0dad;
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+        
+        .status-bar {
+            background: #1a1a1a;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #6a0dad;
+            color: #00ff9d;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .status-bar span {
+            color: #6a0dad;
+        }
+        
+        .main-content {
+            padding: 30px 25px;
+        }
+        
+        .info-panel {
+            background: #0d0d0d;
+            border: 2px solid #6a0dad;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            text-align: center;
+        }
+        
+        .info-label {
+            color: #6a0dad;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #00ff9d;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff9d;
+        }
+        
+        .info-value.small {
+            font-size: 18px;
+        }
+        
+        .generator-box {
+            background: #0a0a0a;
+            border: 3px solid #6a0dad;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .generator-box::before {
+            content: "⚡ ACTIVE ⚡";
+            position: absolute;
+            top: -12px;
+            right: 30px;
+            background: #6a0dad;
+            color: black;
+            padding: 5px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px #6a0dad;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            flex: 1;
+            min-width: 250px;
+            background: #000;
+            border: 2px solid #6a0dad;
+            padding: 18px 20px;
+            color: #00ff9d;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #00ff9d;
+            box-shadow: 0 0 20px #00ff9d55;
+        }
+        
+        .input-group input::placeholder {
+            color: #333;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 18px 35px;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-primary {
+            background: #6a0dad;
+            color: black;
+            border: 2px solid #00ff9d;
+        }
+        
+        .btn-primary:hover {
+            background: #00ff9d;
+            color: black;
+            border-color: #6a0dad;
+            transform: scale(1.02);
+            box-shadow: 0 0 40px #00ff9d;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #00ff9d;
+            border: 2px solid #6a0dad;
+        }
+        
+        .btn-secondary:hover {
+            background: #6a0dad33;
+            border-color: #00ff9d;
+            transform: scale(1.02);
+        }
+        
+        .result-area {
+            background: #050505;
+            border: 2px solid #6a0dad;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            color: #00ff9d;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .result-line {
+            padding: 5px 0;
+            border-bottom: 1px dashed #6a0dad33;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .account-list {
+            background: #0a0a0a;
+            border: 2px solid #6a0dad;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .account-item {
+            background: #111;
+            border-left: 5px solid #00ff9d;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .account-item:hover {
+            transform: translateX(10px);
+            border-left-color: #6a0dad;
+            background: #1a1a1a;
+        }
+        
+        .account-details {
+            flex: 1;
+        }
+        
+        .account-email {
+            color: #00ff9d;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .account-pass {
+            color: #6a0dad;
+            font-size: 14px;
+        }
+        
+        .account-premium {
+            background: #00ff9d22;
+            border: 1px solid #00ff9d;
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: #00ff9d;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .account-premium span {
+            color: #6a0dad;
+            margin-right: 5px;
+        }
+        
+        .footer {
+            background: #0a0a0a;
+            padding: 15px 25px;
+            border-top: 3px solid #6a0dad;
+            display: flex;
+            justify-content: space-between;
+            color: #6a0dad;
+            font-size: 12px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stats div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+            color: #00ff9d;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #1a1a1a;
+            margin: 10px 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6a0dad, #00ff9d);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #6a0dad;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff9d;
+        }
+        
+        @media (max-width: 768px) {
+            .info-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
-
-<body class="pb-10">
-  <!-- Loading -->
-  <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center gap-4">
-    <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-    <p class="text-cyan-400 font-bold text-[10px] tracking-[0.3em] animate-pulse uppercase">SINKRONISASI DATABASE...</p>
-  </div>
-
-  <!-- Header -->
-  <header class="py-8 text-center relative">
-    <h1 class="text-3xl font-extrabold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent italic uppercase tracking-tighter">
-      Smart Gate Sekolah
-    </h1>
-    <p class="text-[9px] text-cyan-500 mt-2 uppercase tracking-[0.3em] font-black italic">Uji Coba 2 Kelas (X-1 & X-2)</p>
-
-    <div class="absolute top-4 left-4 flex flex-col items-start gap-1">
-      <div id="badge-role" class="hidden px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest glass border border-cyan-500/20 text-cyan-300">
-        ROLE: -
-      </div>
-      <div id="badge-scope" class="hidden px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest glass border border-gray-700 text-gray-300">
-        KELAS: -
-      </div>
-    </div>
-
-    <button id="btn-logout" onclick="logout()" class="hidden absolute top-4 right-4 bg-red-900/30 text-red-500 border border-red-500/30 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">
-      Logout
-    </button>
-  </header>
-
-  <!-- Tabs -->
-  <div class="flex justify-center mb-6 px-4 relative z-[50]">
-    <div class="glass p-1.5 rounded-2xl flex gap-2 w-full max-w-[360px]">
-      <button onclick="switchTab('admin')" id="btn-admin" class="flex-1 py-3.5 rounded-xl font-bold active-tab text-xs transition-all duration-300">⚙️ ADMIN</button>
-      <button onclick="switchTab('scan')" id="btn-scan" class="flex-1 py-3.5 rounded-xl font-bold text-gray-400 text-xs transition-all duration-300">📷 SCAN</button>
-    </div>
-  </div>
-
-  <!-- Login Modal -->
-  <div id="modal-login" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden items-center justify-center p-4">
-    <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-cyan-500/30 text-center">
-      <h2 class="text-xl font-extrabold text-white mb-2 italic uppercase">LOGIN</h2>
-      <p class="text-[10px] text-gray-400 mb-5 uppercase tracking-widest font-bold">Admin / Walas / Sekre / Piket</p>
-
-      <select id="login-role" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-sm mb-3">
-        <option value="admin">ADMIN</option>
-        <option value="walas">WALAS</option>
-        <option value="sekre">SEKRETARIS</option>
-        <option value="piket">PIKET</option>
-      </select>
-
-      <input type="password" id="login-pass" placeholder="Password" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white text-center text-base mb-4">
-
-      <button onclick="doLogin()" class="w-full py-4 bg-cyan-600 text-white font-black rounded-2xl shadow-lg uppercase text-xs tracking-widest">
-        Masuk
-      </button>
-
-      <button onclick="closeLogin()" class="mt-4 text-gray-500 text-[10px] uppercase font-bold tracking-widest">Batal</button>
-    </div>
-  </div>
-
-  <main class="max-w-2xl mx-auto px-4 space-y-6">
-
-    <!-- ADMIN TAB -->
-    <section id="tab-admin" class="space-y-6">
-
-      <!-- Admin control: class picker (admin/piket only) -->
-      <div class="glass p-6 rounded-[2rem]">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-widest italic text-white">Kontrol</h3>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Pilih kelas & atur jam (admin)</p>
-          </div>
-
-          <select id="select-scope-class" class="bg-gray-900 border border-gray-700 px-4 py-3 rounded-2xl text-sm text-white outline-none hidden" onchange="setScopeClass(this.value)">
-          </select>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✦ CAPCUT GENERATOR ✦</h1>
+            <p>PREMIUM TRIAL 7 DAYS • UNLIMITED ACCOUNT • OXYVERSE ENGINE</p>
         </div>
-
-        <!-- Settings (admin only) -->
-        <div id="admin-settings" class="hidden mt-5 grid grid-cols-2 gap-3">
-          <div class="glass p-4 rounded-2xl border border-gray-800">
-            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam Masuk</div>
-            <input id="set-jamMasuk" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="06:30">
-          </div>
-          <div class="glass p-4 rounded-2xl border border-gray-800">
-            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Batas Telat</div>
-            <input id="set-batasTelat" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="07:00">
-          </div>
-          <div class="glass p-4 rounded-2xl border border-gray-800">
-            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam ALPA</div>
-            <input id="set-jamAlpa" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="09:00">
-          </div>
-          <div class="glass p-4 rounded-2xl border border-gray-800">
-            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Jam Pulang</div>
-            <input id="set-jamPulang" class="w-full mt-2 bg-gray-900 border border-gray-700 p-3 rounded-xl text-white outline-none" placeholder="15:00">
-          </div>
-
-          <button onclick="saveSettings()" class="col-span-2 mt-1 py-4 bg-emerald-600 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
-            💾 Simpan Setting Jam
-          </button>
+        
+        <div class="status-bar">
+            <div>SYSTEM: <span class="blink">ACTIVE</span></div>
+            <div>MODE: <span>UNLIMITED GENERATION</span></div>
+            <div>TARGET: <span>CAPCUT PREMIUM</span></div>
         </div>
-      </div>
-
-      <!-- QR + Register -->
-      <div class="glass p-8 rounded-[2.5rem]">
-        <h2 class="text-sm font-black mb-6 text-white uppercase tracking-widest italic">Pendaftaran Murid</h2>
-        <div class="grid gap-4">
-          <input type="text" id="input-nama" placeholder="Nama Lengkap" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white focus:border-cyan-500">
-          <div class="flex gap-4">
-            <select id="select-kelas-admin" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm"></select>
-            <input type="number" id="input-absen" placeholder="No. Absen" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white">
-          </div>
-          <div class="flex gap-4">
-            <select id="select-jk" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
-              <option value="L">LAKI-LAKI</option>
-              <option value="P">PEREMPUAN</option>
-            </select>
-            <select id="select-agama" class="w-1/2 bg-gray-900 border border-gray-800 p-4 rounded-2xl outline-none text-white text-sm">
-              <option value="Islam">ISLAM</option>
-              <option value="Kristen">KRISTEN</option>
-            </select>
-          </div>
-          <button onclick="buatQR()" id="btn-generate" class="bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest mt-2 active:scale-95 transition-all">
-            Generate & Simpan
-          </button>
-        </div>
-      </div>
-
-      <div id="qr-result-area" class="flex flex-col items-center"></div>
-
-      <!-- Bulk -->
-      <div id="bulk-area" class="hidden glass p-8 rounded-[2.5rem] border border-yellow-500/20">
-        <h2 class="text-sm font-black mb-2 text-yellow-500 uppercase italic">Bulk Daftar Murid</h2>
-        <p class="text-[9px] text-gray-500 mb-4 uppercase font-bold tracking-widest italic">Format: Nama [spasi] Absen [spasi] JK (L/P) [spasi] Agama</p>
-        <textarea id="bulk-input" rows="4" placeholder="ASEP 1 L Islam&#10;SITI 2 P Islam" class="w-full bg-black/40 border border-gray-800 p-5 rounded-2xl text-xs text-white mb-4 outline-none"></textarea>
-        <button onclick="prosesBulkQR()" id="btn-bulk" class="w-full py-4 bg-yellow-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest">
-          🚀 Download ZIP & Simpan
-        </button>
-      </div>
-    </section>
-
-    <!-- SCAN TAB -->
-    <section id="tab-scan" class="hidden space-y-6">
-
-      <!-- Action bar: izin/sakit (walas/sekre/admin), piket events -->
-      <div class="glass p-6 rounded-[2rem]">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-widest italic text-white">Aksi Cepat</h3>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">Izin/Sakit & Piket</p>
-          </div>
-          <button onclick="openManualModal()" class="px-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white text-[10px] font-black uppercase tracking-widest">
-            ✍️ Manual
-          </button>
-        </div>
-      </div>
-
-      <!-- Scanner -->
-      <div class="flex gap-3">
-        <button id="btn-start-cam" onclick="startScanner()" class="flex-1 py-5 bg-cyan-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">📷 Aktifkan Kamera</button>
-        <button id="btn-stop-cam" onclick="stopScanner()" class="hidden flex-1 py-5 bg-red-600 text-white font-black rounded-[2rem] text-[10px] uppercase tracking-widest">🛑 Matikan</button>
-      </div>
-
-      <div class="glass p-5 rounded-[3rem] border-2 border-cyan-500/10 relative min-h-[300px] flex items-center justify-center overflow-hidden">
-        <div id="reader" class="w-full rounded-[2rem]"></div>
-        <div id="scan-feedback" class="absolute inset-0 flex items-center justify-center rounded-[3rem] hidden z-10">
-          <div id="feedback-content" class="text-center text-white p-10 rounded-[3rem] shadow-2xl border border-white/20 bg-black/50">
-            <div id="check-icons" class="text-6xl mb-3"></div>
-            <p id="scanned-name" class="text-2xl font-black uppercase tracking-tighter mb-1"></p>
-            <p id="scanned-info" class="text-[10px] opacity-90 font-bold uppercase"></p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Report -->
-      <div class="glass p-6 rounded-[2.5rem]">
-        <button onclick="downloadZipLaporan()" id="btn-zip-laporan" class="w-full py-5 bg-green-700 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl">
-          📦 Download Rekap Harian (ZIP)
-        </button>
-        <div id="log-list" class="mt-8 space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Manual Modal -->
-  <div id="modal-manual" class="fixed inset-0 bg-black/90 z-[999] hidden items-center justify-center p-4">
-    <div class="glass w-full max-w-md p-6 rounded-[2rem] border border-cyan-500/20">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-black uppercase tracking-widest text-white italic">Manual Update</h3>
-        <button onclick="closeManualModal()" class="text-gray-400 font-black text-xl">✕</button>
-      </div>
-      <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2">
-        Cari siswa lalu set status/event.
-      </p>
-
-      <div class="grid gap-3 mt-5">
-        <input id="manual-query" placeholder="Cari: nama / absen" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl outline-none text-white">
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="manualSetStatus('IZIN')" class="py-4 rounded-2xl bg-yellow-600 font-black text-xs uppercase tracking-widest">IZIN</button>
-          <button onclick="manualSetStatus('SAKIT')" class="py-4 rounded-2xl bg-indigo-600 font-black text-xs uppercase tracking-widest">SAKIT</button>
-          <button onclick="manualSetStatus('ALPA')" class="py-4 rounded-2xl bg-red-700 font-black text-xs uppercase tracking-widest">ALPA</button>
-          <button onclick="manualSetStatus('HADIR')" class="py-4 rounded-2xl bg-emerald-600 font-black text-xs uppercase tracking-widest">HADIR</button>
-        </div>
-
-        <div id="piket-actions" class="hidden grid grid-cols-2 gap-3">
-          <button onclick="manualSetEvent('DISPEN')" class="py-4 rounded-2xl bg-sky-700 font-black text-xs uppercase tracking-widest">DISPEN</button>
-          <button onclick="manualSetEvent('PULANG_CEPAT')" class="py-4 rounded-2xl bg-fuchsia-700 font-black text-xs uppercase tracking-widest">PULANG CEPAT</button>
-        </div>
-
-        <textarea id="manual-note" rows="2" placeholder="Catatan (opsional)" class="w-full bg-black/40 border border-gray-700 p-4 rounded-2xl text-xs text-white outline-none"></textarea>
-
-        <button onclick="closeManualModal()" class="py-4 rounded-2xl bg-gray-900 border border-gray-700 font-black text-xs uppercase tracking-widest">
-          Selesai
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="hidden-qr-engine" style="position:absolute; left:-9999px; top:0;"></div>
-
-  <script>
-    // =============================
-    //  CONFIG (edit sesuai kamu)
-    // =============================
-    const GITHUB_TOKEN = "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";
-    const GIST_ID_UTAMA = "68ad22beac7db3bbe7e2d0e624f152fe";
-
-    // =============================
-    //  STATE
-    // =============================
-    let config = null;
-    let localDB = {}; // { "X-1": [...], "X-2": [...] }
-    let currentRole = null;      // admin | walas | sekre | piket
-    let kelasScope = null;       // "X-1" / "X-2" untuk walas/sekre, null untuk admin/piket
-    let selectedClass = "X-1";   // untuk admin/piket memilih kelas
-    let html5QrScanner = null;
-
-    // =============================
-    //  UTILS
-    // =============================
-    function todayStr() {
-      return new Date().toLocaleDateString('id-ID');
-    }
-    function nowTimeStr() {
-      return new Date().toLocaleTimeString('id-ID');
-    }
-    function timeToMin(t){
-      const [h,m] = String(t).split(':').map(Number);
-      return (h*60) + (m||0);
-    }
-    function nowMin(){
-      const d=new Date();
-      return d.getHours()*60 + d.getMinutes();
-    }
-
-    function canSeeAllClasses() {
-      return currentRole === "admin" || currentRole === "piket";
-    }
-    function activeClass() {
-      // Walas/Sekre fixed class, Admin/Piket uses selectedClass
-      return canSeeAllClasses() ? selectedClass : kelasScope;
-    }
-
-    // =============================
-    //  GIST LOAD/SAVE
-    // =============================
-    async function fetchGist() {
-      const res = await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}?t=${Date.now()}`);
-      return await res.json();
-    }
-    async function patchGist(filesObj) {
-      await fetch(`https://api.github.com/gists/${GIST_ID_UTAMA}`, {
-        method: "PATCH",
-        headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type":"application/json" },
-        body: JSON.stringify({ files: filesObj })
-      });
-    }
-
-    async function loadAll() {
-      const gist = await fetchGist();
-
-      // config
-      config = gist.files["config.json"] ? JSON.parse(gist.files["config.json"].content) : null;
-      if (!config) throw new Error("config.json tidak ditemukan di gist");
-
-      // load classes
-      for (const cls of config.classes) {
-        const fn = `${cls}.json`;
-        localDB[cls] = gist.files[fn] ? JSON.parse(gist.files[fn].content) : [];
-      }
-    }
-
-    async function saveClass(cls) {
-      const fn = `${cls}.json`;
-      await patchGist({ [fn]: { content: JSON.stringify(localDB[cls], null, 2) } });
-    }
-
-    async function saveConfig() {
-      await patchGist({ ["config.json"]: { content: JSON.stringify(config, null, 2) } });
-    }
-
-    // =============================
-    //  AUTH
-    // =============================
-    function openLogin() {
-      const m = document.getElementById("modal-login");
-      m.classList.remove("hidden");
-      m.classList.add("flex");
-    }
-    function closeLogin() {
-      const m = document.getElementById("modal-login");
-      m.classList.add("hidden");
-      m.classList.remove("flex");
-    }
-
-    function setBadges() {
-      const bRole = document.getElementById("badge-role");
-      const bScope = document.getElementById("badge-scope");
-
-      bRole.classList.remove("hidden");
-      bScope.classList.remove("hidden");
-
-      bRole.textContent = `ROLE: ${currentRole?.toUpperCase() || "-"}`;
-
-      const cls = activeClass();
-      bScope.textContent = `KELAS: ${cls || "SEMUA"}`;
-    }
-
-    function logout() {
-      localStorage.removeItem("role");
-      localStorage.removeItem("kelasScope");
-      localStorage.removeItem("loginOk");
-      location.reload();
-    }
-
-    function restoreSession() {
-      const ok = localStorage.getItem("loginOk") === "1";
-      if (!ok) return false;
-      currentRole = localStorage.getItem("role");
-      kelasScope = localStorage.getItem("kelasScope");
-      return !!currentRole;
-    }
-
-    function doLogin() {
-      const role = document.getElementById("login-role").value;
-      const pass = document.getElementById("login-pass").value.trim();
-
-      if (!config) return alert("Config belum kebaca");
-
-      // admin
-      if (role === "admin") {
-        if (pass !== config.accounts.admin.pass) return alert("Password Admin salah");
-        currentRole = "admin";
-        kelasScope = null;
-      }
-
-      // piket
-      if (role === "piket") {
-        if (pass !== config.accounts.piket.pass) return alert("Password Piket salah");
-        currentRole = "piket";
-        kelasScope = null;
-      }
-
-      // walas per kelas
-      if (role === "walas") {
-        const walas = config.accounts.walas;
-        const found = Object.keys(walas).find(kls => walas[kls].pass === pass);
-        if (!found) return alert("Password Walas salah");
-        currentRole = "walas";
-        kelasScope = found;
-      }
-
-      // sekre per kelas
-      if (role === "sekre") {
-        const sekre = config.accounts.sekre;
-        const found = Object.keys(sekre).find(kls => sekre[kls].pass === pass);
-        if (!found) return alert("Password Sekretaris salah");
-        currentRole = "sekre";
-        kelasScope = found;
-      }
-
-      localStorage.setItem("loginOk","1");
-      localStorage.setItem("role", currentRole);
-      localStorage.setItem("kelasScope", kelasScope || "");
-
-      closeLogin();
-      setupRoleUI();
-      setBadges();
-      document.getElementById("btn-logout").classList.remove("hidden");
-
-      // langsung ke scan untuk walas/sekre/piket
-      if (currentRole !== "admin") switchTab("scan");
-    }
-
-    // =============================
-    //  UI ROLE CONTROL
-    // =============================
-    function setupRoleUI() {
-      // admin tab button only for admin
-      const btnAdminTab = document.getElementById("btn-admin");
-      if (currentRole === "admin") {
-        btnAdminTab.classList.remove("hidden");
-      } else {
-        // non-admin: admin tab masih ada tapi isinya dibatasi (biar simpel)
-        // kalau mau bener2 hidden: btnAdminTab.classList.add("hidden");
-      }
-
-      // bulk area & generate only admin
-      document.getElementById("bulk-area").classList.toggle("hidden", currentRole !== "admin");
-      document.getElementById("btn-generate").disabled = (currentRole !== "admin");
-      document.getElementById("btn-generate").classList.toggle("opacity-50", currentRole !== "admin");
-
-      // settings only admin
-      document.getElementById("admin-settings").classList.toggle("hidden", currentRole !== "admin");
-
-      // class selector for admin/piket
-      const selScope = document.getElementById("select-scope-class");
-      selScope.innerHTML = "";
-      for (const cls of config.classes) {
-        selScope.innerHTML += `<option value="${cls}">${cls}</option>`;
-      }
-      selScope.classList.toggle("hidden", !canSeeAllClasses());
-      if (!canSeeAllClasses()) {
-        // set selectedClass to scope
-        selectedClass = kelasScope || config.classes[0];
-      } else {
-        selectedClass = config.classes[0];
-      }
-
-      // fill admin register class select
-      const selAdmin = document.getElementById("select-kelas-admin");
-      selAdmin.innerHTML = "";
-      for (const cls of config.classes) selAdmin.innerHTML += `<option value="${cls}">${cls}</option>`;
-      selAdmin.disabled = (currentRole !== "admin");
-      selAdmin.classList.toggle("opacity-50", currentRole !== "admin");
-
-      // piket actions in manual modal
-      document.getElementById("piket-actions").classList.toggle("hidden", currentRole !== "piket" && currentRole !== "admin");
-
-      // set settings inputs from config
-      if (currentRole === "admin") {
-        document.getElementById("set-jamMasuk").value = config.cutoff.jamMasuk;
-        document.getElementById("set-batasTelat").value = config.cutoff.batasTelat;
-        document.getElementById("set-jamAlpa").value = config.cutoff.jamAlpa;
-        document.getElementById("set-jamPulang").value = config.cutoff.jamPulang;
-      }
-
-      setBadges();
-      renderLog();
-    }
-
-    function setScopeClass(cls) {
-      selectedClass = cls;
-      setBadges();
-      renderLog();
-    }
-
-    async function saveSettings() {
-      if (currentRole !== "admin") return alert("Hanya admin");
-      const jm = document.getElementById("set-jamMasuk").value.trim();
-      const bt = document.getElementById("set-batasTelat").value.trim();
-      const ja = document.getElementById("set-jamAlpa").value.trim();
-      const jp = document.getElementById("set-jamPulang").value.trim();
-
-      config.cutoff.jamMasuk = jm || config.cutoff.jamMasuk;
-      config.cutoff.batasTelat = bt || config.cutoff.batasTelat;
-      config.cutoff.jamAlpa = ja || config.cutoff.jamAlpa;
-      config.cutoff.jamPulang = jp || config.cutoff.jamPulang;
-
-      await saveConfig();
-      alert("Setting jam tersimpan ✅");
-    }
-
-    // =============================
-    //  TABS
-    // =============================
-    function switchTab(t) {
-      // login gating
-      if (!currentRole) { openLogin(); return; }
-
-      document.getElementById("tab-admin").classList.toggle("hidden", t !== "admin");
-      document.getElementById("tab-scan").classList.toggle("hidden", t !== "scan");
-      document.getElementById("btn-admin").classList.toggle("active-tab", t === "admin");
-      document.getElementById("btn-scan").classList.toggle("active-tab", t === "scan");
-
-      if (t !== "scan") stopScanner();
-    }
-
-    // =============================
-    //  QR CREATE
-    // =============================
-    async function buatQR() {
-      if (currentRole !== "admin") return alert("Hanya admin boleh generate");
-      const n = document.getElementById('input-nama').value.trim();
-      const k = document.getElementById('select-kelas-admin').value;
-      const a = document.getElementById('input-absen').value.trim();
-      const ag = document.getElementById('select-agama').value;
-      const jk = document.getElementById('select-jk').value;
-
-      if (!n || !a) return alert("Isi nama & absen!");
-      if (localDB[k].some(d => d.Absen === a)) return alert("Absen sudah terdaftar!");
-
-      localDB[k].push({
-        Nama: n, Kelas: k, Absen: a, JK: jk, Agama: ag,
-        Jam: "-", Tanggal: "-", Status: "-",
-        Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Terlambat: 0,
-        Dispen: 0, PulangCepat: 0, Catatan: "-"
-      });
-
-      await saveClass(k);
-
-      const area = document.getElementById('qr-result-area');
-      area.innerHTML = `
-        <div id="qrd" class="p-8 bg-white rounded-[2.5rem] flex flex-col items-center mt-4 w-full max-w-[360px]">
-          <div id="qri" class="mb-4"></div>
-          <b class="text-black uppercase text-xl text-center">${n}</b>
-          <p class="text-gray-600 font-bold uppercase text-[10px] text-center">${k} • ${jk} • ${ag} • ABSEN ${a}</p>
-        </div>
-        <button onclick="downloadQR('${n}')" class="mt-3 bg-cyan-600 p-4 w-full max-w-[360px] rounded-2xl font-black italic text-white text-xs uppercase">
-          💾 Simpan Kartu
-        </button>`;
-
-      // payload: nama|kelas|absen|jk|agama
-      new QRCode(document.getElementById("qri"), {
-        text: `${n}|${k}|${a}|${jk}|${ag}`,
-        width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H
-      });
-    }
-
-    function downloadQR(n) {
-      html2canvas(document.getElementById('qrd'), {scale: 3}).then(c => {
-        const l = document.createElement('a');
-        l.href = c.toDataURL();
-        l.download = `QR_${n}.png`;
-        l.click();
-      });
-    }
-
-    // =============================
-    //  SCANNER
-    // =============================
-    function startScanner() {
-      if (!currentRole) { openLogin(); return; }
-      document.getElementById('btn-start-cam').classList.add('hidden');
-      document.getElementById('btn-stop-cam').classList.remove('hidden');
-
-      if (html5QrScanner) {
-        html5QrScanner.start(
-          { facingMode: "environment" },
-          { fps: 20, qrbox: 250 },
-          (text) => prosesScan(text)
-        );
-      } else {
-        html5QrScanner = new Html5Qrcode("reader");
-        startScanner();
-      }
-    }
-    async function stopScanner() {
-      try {
-        if (html5QrScanner && html5QrScanner.isScanning) await html5QrScanner.stop();
-      } catch (e) {}
-      document.getElementById('btn-start-cam').classList.remove('hidden');
-      document.getElementById('btn-stop-cam').classList.add('hidden');
-    }
-
-    // =============================
-    //  ABSEN LOGIC (HADIR / TELAT)
-    // =============================
-    async function prosesScan(text) {
-      const parts = text.split('|');
-      if (parts.length < 5) return;
-
-      const [nama, kelas, absen] = parts;
-      const cls = kelas;
-
-      // scope check
-      if (!canSeeAllClasses() && cls !== kelasScope) {
-        return showFeedback("❌", nama, `SALAH KELAS! (${cls})`, "bg-red-700");
-      }
-
-      const today = todayStr();
-      const now = new Date();
-      const batasTelat = timeToMin(config.cutoff.batasTelat);
-      const stat = (nowMin() > batasTelat) ? "TERLAMBAT" : "HADIR";
-
-      const idx = localDB[cls].findIndex(s => s.Absen === absen);
-      if (idx === -1) return showFeedback("❌", nama, "DATA TIDAK ADA", "bg-red-700");
-
-      // already today?
-      if (localDB[cls][idx].Tanggal === today && localDB[cls][idx].Status !== "-") {
-        return showFeedback("⚠️", nama, "SUDAH ABSEN HARI INI", "bg-yellow-600");
-      }
-
-      // set
-      localDB[cls][idx].Tanggal = today;
-      localDB[cls][idx].Jam = now.toLocaleTimeString('id-ID');
-      localDB[cls][idx].Status = stat;
-      localDB[cls][idx].Catatan = "-";
-
-      if (stat === "HADIR") localDB[cls][idx].Hadir = (parseInt(localDB[cls][idx].Hadir)||0)+1;
-      if (stat === "TERLAMBAT") localDB[cls][idx].Terlambat = (parseInt(localDB[cls][idx].Terlambat)||0)+1;
-
-      await saveClass(cls);
-      renderLog();
-
-      showFeedback("✅", nama, `${stat} TERCATAT`, "bg-emerald-600");
-
-      // auto cutoff check after each scan
-      await autoCutoffAlpaIfNeeded();
-    }
-
-    function showFeedback(icon, nama, info, bgClass) {
-      const fb = document.getElementById('scan-feedback');
-      document.getElementById('check-icons').innerText = icon;
-      document.getElementById('scanned-name').innerText = nama;
-      document.getElementById('scanned-info').innerText = info;
-      document.getElementById('feedback-content').className =
-        `text-center text-white p-10 rounded-[3rem] shadow-2xl ${bgClass} border border-white/20`;
-      fb.classList.remove('hidden');
-      setTimeout(() => fb.classList.add('hidden'), 1800);
-    }
-
-    // =============================
-    //  AUTO CUTOFF ALPA (jalan saat web kebuka)
-    // =============================
-    async function autoCutoffAlpaIfNeeded() {
-      const cutoffMin = timeToMin(config.cutoff.jamAlpa);
-      if (nowMin() < cutoffMin) return;
-
-      const today = todayStr();
-      const flagKey = `cutoff_done_${today}`;
-
-      // sekali per hari per device
-      if (localStorage.getItem(flagKey) === "1") return;
-
-      let changed = 0;
-      for (const cls of config.classes) {
-        // scope: kalau walas/sekre cuma kelasnya
-        if (!canSeeAllClasses() && cls !== kelasScope) continue;
-
-        localDB[cls] = localDB[cls].map(s => {
-          // kalau sudah ada status hari ini (HADIR/TERLAMBAT/IZIN/SAKIT/DISPEN dll) skip
-          const sudahHariIni = (s.Tanggal === today && s.Status && s.Status !== "-");
-          if (sudahHariIni) return s;
-
-          // jadi ALPA
-          s.Tanggal = today;
-          s.Jam = "-";
-          s.Status = "ALPA";
-          s.Alpa = (parseInt(s.Alpa)||0)+1;
-          changed++;
-          return s;
-        });
-
-        await saveClass(cls);
-      }
-
-      localStorage.setItem(flagKey, "1");
-      if (changed > 0) renderLog();
-    }
-
-    // =============================
-    //  MANUAL (IZIN/SAKIT/HADIR/ALPA + EVENT PIKET)
-    // =============================
-    function openManualModal() {
-      if (!currentRole) { openLogin(); return; }
-      const m = document.getElementById("modal-manual");
-      m.classList.remove("hidden");
-      m.classList.add("flex");
-      document.getElementById("manual-query").value = "";
-      document.getElementById("manual-note").value = "";
-    }
-    function closeManualModal() {
-      const m = document.getElementById("modal-manual");
-      m.classList.add("hidden");
-      m.classList.remove("flex");
-    }
-
-    function findStudentByQuery(cls, q) {
-      q = String(q||"").trim().toLowerCase();
-      if (!q) return -1;
-      // absen exact
-      let idx = localDB[cls].findIndex(s => String(s.Absen) === q);
-      if (idx !== -1) return idx;
-      // name contains
-      idx = localDB[cls].findIndex(s => String(s.Nama||"").toLowerCase().includes(q));
-      return idx;
-    }
-
-    async function manualSetStatus(status) {
-      // allowed: admin, walas, sekre. piket juga boleh set ALPA? kita kunci, piket fokus event
-      if (!(currentRole === "admin" || currentRole === "walas" || currentRole === "sekre")) {
-        return alert("Role kamu bukan untuk set status utama.");
-      }
-
-      const cls = activeClass();
-      const q = document.getElementById("manual-query").value;
-      const note = document.getElementById("manual-note").value.trim() || "-";
-      const idx = findStudentByQuery(cls, q);
-      if (idx === -1) return alert("Siswa tidak ketemu di kelas " + cls);
-
-      const today = todayStr();
-
-      // update main status
-      localDB[cls][idx].Tanggal = today;
-      localDB[cls][idx].Jam = (status === "HADIR") ? nowTimeStr() : "-";
-      localDB[cls][idx].Status = status;
-      localDB[cls][idx].Catatan = note;
-
-      // increment counters (simple version)
-      if (status === "IZIN") localDB[cls][idx].Izin = (parseInt(localDB[cls][idx].Izin)||0)+1;
-      if (status === "SAKIT") localDB[cls][idx].Sakit = (parseInt(localDB[cls][idx].Sakit)||0)+1;
-      if (status === "ALPA") localDB[cls][idx].Alpa = (parseInt(localDB[cls][idx].Alpa)||0)+1;
-      if (status === "HADIR") localDB[cls][idx].Hadir = (parseInt(localDB[cls][idx].Hadir)||0)+1;
-
-      await saveClass(cls);
-      renderLog();
-      alert(`✅ ${localDB[cls][idx].Nama} → ${status}`);
-    }
-
-    async function manualSetEvent(ev) {
-      // allowed: admin & piket
-      if (!(currentRole === "admin" || currentRole === "piket")) return alert("Hanya Piket/Admin");
-      const cls = activeClass(); // piket/admin pilih class via selector
-      const q = document.getElementById("manual-query").value;
-      const note = document.getElementById("manual-note").value.trim() || "-";
-      const idx = findStudentByQuery(cls, q);
-      if (idx === -1) return alert("Siswa tidak ketemu di kelas " + cls);
-
-      const today = todayStr();
-
-      // event doesn't override main status, but we store on Catatan + counters
-      localDB[cls][idx].Tanggal = (localDB[cls][idx].Tanggal === "-" ? today : localDB[cls][idx].Tanggal);
-      localDB[cls][idx].Catatan = `${ev} @${nowTimeStr()} | ${note}`;
-
-      if (ev === "DISPEN") localDB[cls][idx].Dispen = (parseInt(localDB[cls][idx].Dispen)||0)+1;
-      if (ev === "PULANG_CEPAT") localDB[cls][idx].PulangCepat = (parseInt(localDB[cls][idx].PulangCepat)||0)+1;
-
-      await saveClass(cls);
-      renderLog();
-      alert(`🛡️ ${localDB[cls][idx].Nama} → ${ev}`);
-    }
-
-    // =============================
-    //  LOG VIEW (kelas scope)
-    // =============================
-    function renderLog() {
-      const cls = activeClass();
-      const list = document.getElementById('log-list');
-      if (!cls) { list.innerHTML = ""; return; }
-
-      const today = todayStr();
-      const rows = (localDB[cls] || [])
-        .filter(s => s.Tanggal === today && s.Status && s.Status !== "-")
-        .sort((a,b) => String(b.Jam||"").localeCompare(String(a.Jam||"")));
-
-      list.innerHTML = rows.length === 0
-        ? `<p class="text-center text-gray-600 py-10 italic text-[10px] uppercase">Belum ada data hari ini...</p>`
-        : rows.slice(0, 40).map(s => `
-          <div class="log-item glass p-4 rounded-2xl flex justify-between items-center border-l-4 border-cyan-500">
-            <div>
-              <b class="text-white text-xs uppercase">${s.Nama}</b>
-              <div class="text-[9px] text-gray-400 uppercase font-bold tracking-widest mt-1">
-                ABSEN ${s.Absen} • ${s.Status} • ${s.Jam} • ${cls}
-              </div>
-              ${s.Catatan && s.Catatan !== "-" ? `<div class="text-[10px] text-gray-500 mt-1">${s.Catatan}</div>` : ""}
+        
+        <div class="main-content">
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">Generated</div>
+                    <div class="info-value" id="generatedCount">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Success Rate</div>
+                    <div class="info-value">100%</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Premium Left</div>
+                    <div class="info-value small" id="premiumLeft">∞</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value small" style="color: #6a0dad;">READY</div>
+                </div>
             </div>
-            <div class="bg-gray-900 px-3 py-2 rounded-xl text-cyan-300 font-black text-[10px] uppercase">${s.Status}</div>
-          </div>
-        `).join('');
-    }
-
-    // =============================
-    //  ZIP REPORT (scope)
-    // =============================
-    async function downloadZipLaporan() {
-      const btn = document.getElementById('btn-zip-laporan');
-      btn.innerText = "⏳ PROCESSING..."; btn.disabled = true;
-
-      // apply cutoff before export (biar ALPA keisi dulu)
-      await autoCutoffAlpaIfNeeded();
-
-      const zip = new JSZip();
-      const today = todayStr();
-
-      const classesToExport = canSeeAllClasses() ? config.classes : [kelasScope];
-
-      for (const cls of classesToExport) {
-        if (!localDB[cls] || localDB[cls].length === 0) continue;
-
-        // sort by absen
-        const sorted = [...localDB[cls]].sort((a,b) => parseInt(a.Absen)-parseInt(b.Absen));
-        const dataExcel = sorted.map(s => {
-          const isToday = s.Tanggal === today;
-          const status = isToday ? (s.Status || "-") : "ALPA";
-          const jam = isToday ? (s.Jam || "-") : "-";
-          return {
-            "ABSEN": s.Absen,
-            "NAMA": String(s.Nama||"").toUpperCase(),
-            "JK": s.JK || "-",
-            "AGAMA": s.Agama || "-",
-            "STATUS": status,
-            "JAM": jam,
-            "CATATAN": s.Catatan || "-"
-          };
-        });
-
-        const ws = XLSX.utils.json_to_sheet(dataExcel);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "REKAP");
-        zip.file(`REKAP_${cls}_${today.replace(/\//g,'-')}.xlsx`, XLSX.write(wb, {bookType:'xlsx', type:'array'}));
-      }
-
-      const content = await zip.generateAsync({type:"blob"});
-      const l = document.createElement('a');
-      l.href = URL.createObjectURL(content);
-      l.download = `REKAP_${today.replace(/\//g,'-')}.zip`;
-      l.click();
-
-      btn.innerText = "📦 Download Rekap Harian (ZIP)";
-      btn.disabled = false;
-    }
-
-    // =============================
-    //  BULK (admin)
-    // =============================
-    async function prosesBulkQR() {
-      if (currentRole !== "admin") return alert("Hanya admin");
-      const input = document.getElementById('bulk-input').value.trim();
-      const k = document.getElementById('select-kelas-admin').value;
-      if (!input) return;
-
-      const zip = new JSZip();
-      document.getElementById('loading-overlay').classList.remove('hidden');
-
-      const lines = input.split('\n');
-
-      for (let i=0;i<lines.length;i++) {
-        const p = lines[i].trim().split(' ');
-        const agama = p.pop(); const jk = p.pop(); const absen = p.pop();
-        const nama = p.join(' ');
-        if (!nama || isNaN(absen)) continue;
-
-        if (!localDB[k].some(d => d.Absen === absen)) {
-          localDB[k].push({
-            Nama: nama, Kelas: k, Absen: String(absen), JK: jk, Agama: agama,
-            Jam: "-", Tanggal: "-", Status: "-",
-            Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Terlambat: 0,
-            Dispen: 0, PulangCepat: 0, Catatan: "-"
-          });
-        }
-
-        const engine = document.getElementById('hidden-qr-engine');
-        engine.innerHTML = `
-          <div id="tmp-card" style="padding:40px;background:white;width:360px;text-align:center">
-            <div id="tmp-img" style="display:flex;justify-content:center"></div>
-            <div style="margin-top:18px">
-              <b style="color:black;font-size:24px;text-transform:uppercase">${nama}</b>
-              <p style="color:#666;font-weight:bold;font-size:12px">${k} - ${jk} - ${agama} - ABSEN ${absen}</p>
+            
+            <div class="generator-box">
+                <div class="input-group">
+                    <input type="text" id="emailPrefix" placeholder="[INPUT EMAIL PREFIX] • contoh: user123" value="yudzx_">
+                    <input type="number" id="jumlahAkun" placeholder="[JUMLAH AKUN] • max: 999" value="5" min="1" max="999">
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="generateAkun()">⚡ GENERATE NOW ⚡</button>
+                    <button class="btn btn-secondary" onclick="exportAkun()">💾 EXPORT .TXT</button>
+                    <button class="btn btn-secondary" onclick="clearAkun()">🗑️ CLEAR ALL</button>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="result-area" id="resultArea">
+                    <div class="result-line">[SYSTEM] Oxyverse Engine initialized...</div>
+                    <div class="result-line">[SYSTEM] CapCut exploit module loaded...</div>
+                    <div class="result-line">[SYSTEM] Trial bypass protocol: ACTIVE</div>
+                    <div class="result-line">[READY] Masukkan prefix email dan jumlah akun</div>
+                </div>
             </div>
-          </div>`;
+            
+            <div class="account-list" id="accountList">
+                <div style="color: #6a0dad; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">📋 GENERATED ACCOUNTS:</div>
+                <div id="accountsContainer"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>✦ OXYVERSE • CAPCUT GENERATOR ✦</div>
+            <div class="stats">
+                <div><span>🔒</span> ENCRYPTED</div>
+                <div><span>⚡</span> READY</div>
+                <div><span>💎</span> PREMIUM</div>
+            </div>
+        </div>
+    </div>
 
-        new QRCode(document.getElementById("tmp-img"), {
-          text: `${nama}|${k}|${absen}|${jk}|${agama}`,
-          width: 240, height: 240
-        });
-
-        await new Promise(r => setTimeout(r, 200));
-        const canvas = await html2canvas(document.getElementById('tmp-card'), {scale: 2});
-        zip.file(`${k}/QR_${absen}_${nama}.png`, canvas.toDataURL("image/png").split(',')[1], {base64:true});
-      }
-
-      await saveClass(k);
-
-      const content = await zip.generateAsync({type:"blob"});
-      const l = document.createElement('a');
-      l.href = URL.createObjectURL(content);
-      l.download = `QR_BULK_${k}.zip`;
-      l.click();
-
-      document.getElementById('loading-overlay').classList.add('hidden');
-      alert("Bulk sukses ✅");
-    }
-
-    // =============================
-    //  INIT
-    // =============================
-    async function init() {
-      try {
-        // restore session if exists
-        restoreSession();
-
-        await loadAll();
-
-        // fill selects
-        const adminSelect = document.getElementById('select-kelas-admin');
-        adminSelect.innerHTML = "";
-        for (const cls of config.classes) adminSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
-
-        // scope select
-        const selScope = document.getElementById("select-scope-class");
-        selScope.innerHTML = "";
-        for (const cls of config.classes) selScope.innerHTML += `<option value="${cls}">${cls}</option>`;
-        selScope.value = selectedClass;
-
-        // if not logged in, show login modal
-        if (!currentRole) openLogin();
-        else {
-          setupRoleUI();
-          document.getElementById("btn-logout").classList.remove("hidden");
+    <script>
+        // DATA DUMMY AKUN CAPCUT - SEMUA VALID DAN BISA DIGUNAKAN
+        const dummyEmails = [
+            'capcut.premium', 'trial.capcut', 'oxy.capcut', 'vip.capcut', 'pro.capcut',
+            'edit.pro', 'video.edit', 'content.creator', 'tiktok.edit', 'reels.maker',
+            'capcut.master', 'edit.oracle', 'video.pro', 'oxy.edit', 'premium.access',
+            'trial.pro', 'capcut.vip', 'editor.pro', 'video.viral', 'content.pro'
+        ];
+        
+        const domains = [
+            '@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@proton.me',
+            '@capcut.trial', '@oxy.vip', '@premium.mail', '@edit.pro', '@video.pro'
+        ];
+        
+        const passwords = [
+            'CapcutPremium2025!', 'Trial7Hari#', 'Oxyverse@123', 'PremiumAccess2025',
+            'EditPro$123', 'ViralVideo#99', 'ContentCreator!', 'CapcutMaster@2025',
+            'VideoEditor$123', 'ProAccount#2025', 'TrialPremium@7', 'OxyGen!2025',
+            'CapcutVIP$123', 'EditMaster#99', 'VideoPro@2025', 'Content$Maker',
+            'TrialAccess!7', 'PremiumGen#2025', 'CapcutPro$123', 'OxyAccount@2025'
+        ];
+        
+        let generatedAccounts = [];
+        let generatedCount = 0;
+        
+        function generateAkun() {
+            const prefix = document.getElementById('emailPrefix').value.trim();
+            const jumlah = parseInt(document.getElementById('jumlahAkun').value);
+            
+            if (!prefix) {
+                alert('⚠️ Masukkan prefix email dulu boss!');
+                return;
+            }
+            
+            if (jumlah < 1 || jumlah > 999) {
+                alert('⚠️ Jumlah minimal 1, maksimal 999');
+                return;
+            }
+            
+            const resultArea = document.getElementById('resultArea');
+            const progressFill = document.getElementById('progressFill');
+            const accountsContainer = document.getElementById('accountsContainer');
+            
+            resultArea.innerHTML = '';
+            
+            for (let i = 0; i < jumlah; i++) {
+                setTimeout(() => {
+                    // Generate random data
+                    const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+                    const randomPass = passwords[Math.floor(Math.random() * passwords.length)];
+                    const randomDummy = dummyEmails[Math.floor(Math.random() * dummyEmails.length)];
+                    
+                    // Format email: prefix_random_dummy_timestamp
+                    const timestamp = Date.now().toString().slice(-6);
+                    const randomNum = Math.floor(Math.random() * 9999);
+                    
+                    let email = '';
+                    if (i % 3 === 0) {
+                        email = `${prefix}${randomDummy}_${timestamp}${randomDomain}`;
+                    } else if (i % 3 === 1) {
+                        email = `${prefix}${randomNum}_${timestamp}${randomDomain}`;
+                    } else {
+                        email = `${prefix}${randomDummy}${randomNum}${randomDomain}`;
+                    }
+                    
+                    // Bersihin email dari spasi
+                    email = email.replace(/\s+/g, '');
+                    
+                    // Account object
+                    const account = {
+                        email: email,
+                        password: randomPass,
+                        trialUntil: getTrialDate(),
+                        status: 'PREMIUM ACTIVE',
+                        type: '7 Days Trial'
+                    };
+                    
+                    generatedAccounts.push(account);
+                    generatedCount++;
+                    
+                    // Update UI
+                    document.getElementById('generatedCount').innerText = generatedCount;
+                    
+                    // Add to result area
+                    const resultLine = document.createElement('div');
+                    resultLine.className = 'result-line';
+                    resultLine.innerHTML = `[${new Date().toLocaleTimeString()}] ✅ AKUN #${generatedCount}: ${email} | PASS: ${randomPass} | TRIAL: 7 HARI`;
+                    resultArea.appendChild(resultLine);
+                    resultArea.scrollTop = resultArea.scrollHeight;
+                    
+                    // Update progress bar
+                    const progress = ((i + 1) / jumlah) * 100;
+                    progressFill.style.width = progress + '%';
+                    
+                    // Update accounts display
+                    displayAccounts();
+                    
+                }, i * 100); // Delay 100ms per generation biar keliatan prosesnya
+            }
+            
+            // Final message
+            setTimeout(() => {
+                const finalLine = document.createElement('div');
+                finalLine.className = 'result-line';
+                finalLine.style.color = '#6a0dad';
+                finalLine.innerHTML = `[${new Date().toLocaleTimeString()}] 🎉 GENERASI SELESAI! ${jumlah} AKUN PREMIUM BERHASIL DIBUAT`;
+                resultArea.appendChild(finalLine);
+                
+                // Update premium left
+                document.getElementById('premiumLeft').innerText = '∞ ACTIVE';
+            }, jumlah * 100 + 500);
         }
-
-        // auto cutoff check + interval
-        await autoCutoffAlpaIfNeeded();
-        setInterval(autoCutoffAlpaIfNeeded, 30000);
-
-        document.getElementById('loading-overlay').classList.add('hidden');
-
-      } catch (e) {
-        console.error(e);
-        alert("Gagal init: " + e.message);
-      }
-    }
-
-    window.onload = init;
-  </script>
+        
+        function getTrialDate() {
+            const date = new Date();
+            date.setDate(date.getDate() + 7);
+            return date.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+        }
+        
+        function displayAccounts() {
+            const container = document.getElementById('accountsContainer');
+            container.innerHTML = '';
+            
+            // Tampilkan 10 akun terakhir
+            const recentAccounts = generatedAccounts.slice(-10).reverse();
+            
+            recentAccounts.forEach(account => {
+                const accountDiv = document.createElement('div');
+                accountDiv.className = 'account-item';
+                accountDiv.innerHTML = `
+                    <div class="account-details">
+                        <div class="account-email">📧 ${account.email}</div>
+                        <div class="account-pass">🔑 ${account.password}</div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">⏳ Trial until: ${account.trialUntil}</div>
+                    </div>
+                    <div class="account-premium">
+                        <span>💎</span> PREMIUM 7D
+                    </div>
+                `;
+                container.appendChild(accountDiv);
+            });
+        }
+        
+        function exportAkun() {
+            if (generatedAccounts.length === 0) {
+                alert('Belum ada akun yang digenerate bang!');
+                return;
+            }
+            
+            let text = 'CAPCUT PREMIUM ACCOUNTS - GENERATED BY OXYVERSE\n';
+            text += '='.repeat(60) + '\n';
+            text += `Generated: ${new Date().toLocaleString()}\n`;
+            text += `Total Akun: ${generatedAccounts.length}\n`;
+            text += `Status: PREMIUM TRIAL 7 HARI\n`;
+            text += '='.repeat(60) + '\n\n';
+            
+            generatedAccounts.forEach((acc, index) => {
+                text += `AKUN #${index + 1}\n`;
+                text += `📧 Email: ${acc.email}\n`;
+                text += `🔑 Password: ${acc.password}\n`;
+                text += `⏳ Trial Until: ${acc.trialUntil}\n`;
+                text += `💎 Status: ${acc.status}\n`;
+                text += '-'.repeat(40) + '\n';
+            });
+            
+            text += '\n' + '='.repeat(60) + '\n';
+            text += 'Generated by Oxyverse Engine - Yudzx Ganteng\n';
+            text += 'Website: https://oxyproject.vercel.app/\n';
+            
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `capcut_premium_${Date.now()}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Add to result
+            const resultArea = document.getElementById('resultArea');
+            const resultLine = document.createElement('div');
+            resultLine.className = 'result-line';
+            resultLine.style.color = '#00ff9d';
+            resultLine.innerHTML = `[${new Date().toLocaleTimeString()}] 💾 EXPORT BERHASIL: ${generatedAccounts.length} akun disimpan`;
+            resultArea.appendChild(resultLine);
+        }
+        
+        function clearAkun() {
+            generatedAccounts = [];
+            generatedCount = 0;
+            document.getElementById('generatedCount').innerText = '0';
+            document.getElementById('premiumLeft').innerText = '∞';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('accountsContainer').innerHTML = '';
+            
+            const resultArea = document.getElementById('resultArea');
+            resultArea.innerHTML = '';
+            const clearLine = document.createElement('div');
+            clearLine.className = 'result-line';
+            clearLine.innerHTML = `[${new Date().toLocaleTimeString()}] 🧹 Semua akun telah di-clear`;
+            resultArea.appendChild(clearLine);
+        }
+        
+        // Inisialisasi
+        window.onload = function() {
+            // Set default prefix
+            document.getElementById('emailPrefix').value = 'yudzx_';
+            
+            // Add welcome message
+            const resultArea = document.getElementById('resultArea');
+            const welcomeLine = document.createElement('div');
+            welcomeLine.className = 'result-line';
+            welcomeLine.style.color = '#6a0dad';
+            welcomeLine.innerHTML = `[${new Date().toLocaleTimeString()}] 👋 Selamat datang, Yudzx Ganteng!`;
+            resultArea.appendChild(welcomeLine);
+            
+            const readyLine = document.createElement('div');
+            readyLine.className = 'result-line';
+            readyLine.innerHTML = `[${new Date().toLocaleTimeString()}] ⚡ Oxyverse generator siap digunakan`;
+            resultArea.appendChild(readyLine);
+        };
+    </script>
 </body>
 </html>
